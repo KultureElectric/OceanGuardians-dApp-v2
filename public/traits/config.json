@@ -1,0 +1,45 @@
+{
+  "Location": {
+    "order": "z-0",
+    "traits": [
+        "Durban",
+        "Costa Rica",
+        "Cape Town",
+        "Portugal",
+        "Indonesia",
+        "Gold Coast",
+        "Brazil",
+        "Alaska",
+        "Hawaii",
+        "Biarritz"
+    ]
+  },
+  "Wave": {
+    "order": "z-10",
+    "traits": [
+        "Medium",
+        "Small",
+        "Large"
+    ]
+  },
+  "Board": {
+    "order": "z-20",
+    "traits": [
+        "Blue Fish",
+        "Slick Wood",
+        "Red Fish",
+        "Blue Base",
+        "White Fish",
+        "Floral",
+        "Green Fish",
+        "Yellow Fish",
+        "Hi-Tech",
+        "Orange Fish",
+        "Old Wood",
+        "Dark Fish",
+        "White Base",
+        "Black Marmor",
+        "Blue-G Fish"
+    ]
+  }
+}
