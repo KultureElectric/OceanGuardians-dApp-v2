@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from "react";
 import Iframe from "react-iframe";
 
@@ -6,7 +8,7 @@ const ListItem = ({nft, setActiveNFT, activeNFT, reload}) => {
 
     useEffect(() => {
         setLoading(true)
-    }, [reload])
+    }, [reload])    
 
     return (
         <div
@@ -14,7 +16,10 @@ const ListItem = ({nft, setActiveNFT, activeNFT, reload}) => {
             key={nft.externalMetadata.name}
             onClick={() => setActiveNFT(nft)}>
             <div className={"absolute w-36 md:w-44 aspect-square z-10 rounded hover:bg-second " + (loading && "bg-header animate-pulse") + (activeNFT === nft && " !w-40 md:!w-48")}>
-                <p className="absolute bottom-0 left-0 px-2 pt-1 font-bold bg-header rounded-bl-sm">{nft.externalMetadata.name.split(" ")[1]}</p>
+                <p className="absolute bottom-0 left-0 px-2 pt-1 font-bold bg-header rounded-bl-sm">{nft.externalMetadata.name.split(" ")[1]}
+                    <FontAwesomeIcon className={nft.onchainMetadata.updateAuthority === "CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK" ? "invisible" : "ml-2"} icon={faLock} />
+
+                </p>
             </div>
             <Iframe
                 className={"w-36 md:w-44 aspect-square rounded " + (loading ? "invisible" : "visible") + (activeNFT === nft && " !w-40 md:!w-48")}

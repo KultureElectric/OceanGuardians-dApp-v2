@@ -66,13 +66,16 @@ export const HomeView: FC = ({ }) => {
         return o.name === previewTrait
       })?.price
 
-    if (previewTrait === activeNFT.dynamicLayers[traitReference]) {
-      setFormError("This trait is already active")
+    if (activeNFT.onchainMetadata.updateAuthority !== "CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK") {
+      setFormError('Unstake your OG before swapping');
     } else if (previewTrait === "") {
       setFormError("Select a trait")
+    } else if (previewTrait === activeNFT.dynamicLayers[traitReference]) {
+      setFormError("This trait is already active")
     } else if (price && waveBalance < price) {
       setFormError('Not enough $WAVE');
-    }else {
+    
+    } else {
       setFormError('')
       setSwapLoading(true)
       const res = await swapTrait(previewTrait, traitReference, activeNFT, wallet, connection, price);
@@ -183,7 +186,7 @@ export const HomeView: FC = ({ }) => {
                                   _.map(config[traitReference].traits, (trait) => {
                                     if (trait.name === previewTrait) {
                                       return (
-                                        <div className="flex my-4 space-x-2">
+                                        <div key={trait.name} className="flex my-4 space-x-2">
                                         <div className="border border-second mb-1 px-2 py-1 rounded bg-gradient-to-tr from-[#6B8FD6] to-[#3B4F78] text-xs">PRICE: <span className="font-bold text-base">{trait.price}</span> $WAVE</div>
                                         <div className="border border-second mb-1 px-2 py-1 rounded bg-gradient-to-tr from-[#6B8FD6] to-[#3B4F78] text-xs">MULTIPLIER: <span className="fnt-bold text-base">{trait.multiplier}X</span></div>
                                         </div>

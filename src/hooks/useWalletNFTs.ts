@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js"
 import { programs } from "@metaplex/js"
 import { useEffect, useState } from "react"
-import { getNFTsByOwner } from "../utils/nfts"
+import { getNFTsByOwner, getStakedNFTs } from "../utils/nfts"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 
 export type NFT = {
@@ -35,6 +35,8 @@ const useWalletNFTs = () => {
     const fetchNFTs = async () => {
       const NFTs = await getNFTsByOwner(publicKey, connection)
       setWalletNFTs(NFTs)
+      const stakedNFTs = await getStakedNFTs(publicKey, connection);      
+      setWalletNFTs(nfts => [...nfts, ...stakedNFTs])
     }
 
     if (publicKey) {

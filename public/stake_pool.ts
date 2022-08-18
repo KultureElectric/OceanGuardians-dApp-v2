@@ -1,0 +1,1069 @@
+export type StakePool = {
+  "version": "0.1.0",
+  "name": "stake_pool",
+  "instructions": [
+    {
+      "name": "initPool",
+      "accounts": [
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ix",
+          "type": {
+            "defined": "InitPoolIx"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initEntry",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "originalMintMetadata",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "user",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "updateCreators",
+      "accounts": [
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "requiresCreators",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initStakeMint",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "originalMintMetadata",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "stakeMintMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryStakeMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManagerProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "stake",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claimReceiptMint",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receiptMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryReceiptMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userReceiptMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManagerReceiptMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintCounter",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManagerProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unstake",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "closeStakeEntry",
+      "accounts": [
+        {
+          "name": "stakePool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "stakePool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "requiresCreators",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "stakeEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "pool",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "originalMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastStaker",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastStakedAt",
+            "type": "i64"
+          },
+          {
+            "name": "totalStakeSeconds",
+            "type": "i128"
+          },
+          {
+            "name": "stakeMintClaimed",
+            "type": "bool"
+          },
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "stakeMint",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "InitPoolIx",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "requiresCreators",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidOriginalMint",
+      "msg": "Invalid Original Mint"
+    },
+    {
+      "code": 6001,
+      "name": "NoMintMetadata",
+      "msg": "No mint metadata"
+    },
+    {
+      "code": 6002,
+      "name": "MintNotAllowedInPool",
+      "msg": "Mint not allowed in pool"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidStakePool",
+      "msg": "Invalid Stake Pool"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidUserOriginalMintTokenAccount",
+      "msg": "Invalid Original Token account of user"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidStakeEntryOriginalMintTokenAccount",
+      "msg": "Invalid Original Token account of StakeMint pda"
+    },
+    {
+      "code": 6006,
+      "name": "StakeEntryAlreadyStaked",
+      "msg": "NFT already staked"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidStakeEntryMintTokenAccount",
+      "msg": "Invalid Stake Entry Mint Token Account"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidLastStaker",
+      "msg": "Invalid Last Staker"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidReceiptMint",
+      "msg": "Invalid Receipt Mint"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidUnstakeUser",
+      "msg": "Invalid Unstake User"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidStakeEntryStakeTokenAccount",
+      "msg": "Invalid Stake Entry Token Account"
+    },
+    {
+      "code": 6012,
+      "name": "CannotCloseStakedEntry",
+      "msg": "Cannot close staked entry"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority"
+    }
+  ]
+};
+
+export const IDL: StakePool = {
+  "version": "0.1.0",
+  "name": "stake_pool",
+  "instructions": [
+    {
+      "name": "initPool",
+      "accounts": [
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ix",
+          "type": {
+            "defined": "InitPoolIx"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initEntry",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "originalMintMetadata",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "user",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "updateCreators",
+      "accounts": [
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "requiresCreators",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initStakeMint",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "originalMintMetadata",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "stakeMintMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryStakeMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManagerProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "stake",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claimReceiptMint",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receiptMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryReceiptMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userReceiptMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManagerReceiptMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintCounter",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenManagerProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unstake",
+      "accounts": [
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntryOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userOriginalMintTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "closeStakeEntry",
+      "accounts": [
+        {
+          "name": "stakePool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "stakePool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "requiresCreators",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "stakeEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "pool",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "originalMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastStaker",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastStakedAt",
+            "type": "i64"
+          },
+          {
+            "name": "totalStakeSeconds",
+            "type": "i128"
+          },
+          {
+            "name": "stakeMintClaimed",
+            "type": "bool"
+          },
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "stakeMint",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "InitPoolIx",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "requiresCreators",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidOriginalMint",
+      "msg": "Invalid Original Mint"
+    },
+    {
+      "code": 6001,
+      "name": "NoMintMetadata",
+      "msg": "No mint metadata"
+    },
+    {
+      "code": 6002,
+      "name": "MintNotAllowedInPool",
+      "msg": "Mint not allowed in pool"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidStakePool",
+      "msg": "Invalid Stake Pool"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidUserOriginalMintTokenAccount",
+      "msg": "Invalid Original Token account of user"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidStakeEntryOriginalMintTokenAccount",
+      "msg": "Invalid Original Token account of StakeMint pda"
+    },
+    {
+      "code": 6006,
+      "name": "StakeEntryAlreadyStaked",
+      "msg": "NFT already staked"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidStakeEntryMintTokenAccount",
+      "msg": "Invalid Stake Entry Mint Token Account"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidLastStaker",
+      "msg": "Invalid Last Staker"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidReceiptMint",
+      "msg": "Invalid Receipt Mint"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidUnstakeUser",
+      "msg": "Invalid Unstake User"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidStakeEntryStakeTokenAccount",
+      "msg": "Invalid Stake Entry Token Account"
+    },
+    {
+      "code": 6012,
+      "name": "CannotCloseStakedEntry",
+      "msg": "Cannot close staked entry"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority"
+    }
+  ]
+};

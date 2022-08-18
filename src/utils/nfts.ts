@@ -6,8 +6,11 @@ import { programs } from "@metaplex/js"
 import _ from 'lodash';
 import { solana } from 'aleph-sdk-ts/accounts';
 import { aggregate } from 'aleph-sdk-ts';
+import { BorshAccountsCoder, Idl, utils, Program, AnchorProvider } from "@project-serum/anchor";
+import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
 
 const hashList = require('../../public/mint-addresses.json');
+const idl: Idl = require('../../public/stake_pool.json');
 
 const alephAcc = solana.ImportAccountFromPrivateKey(Uint8Array.from(JSON.parse(process.env.NEXT_PUBLIC_ALEPH_KP)));
 
@@ -78,5 +81,38 @@ export async function getNFTsByOwner(
         return _.includes(hashList, mint.mint)
       });      
   
+    return await getNFTMetadataForMany(tokens, conn)
+  }
+
+export async function getStakedNFTs(
+    owner: PublicKey,
+    conn: Connection
+  ) {
+    const programID = new PublicKey('CsfVevZy66ARUY74VCw8Hqxzjkjis9qLAN3bj49m5wTB');
+    const distributorProgramID = new PublicKey('DEvYCMc1BQ7uN3hHgdmHgiNQee2vydMdX3xg9ZJf42c8');
+
+    const stakedEntriesForUser = await conn.getProgramAccounts(
+        programID,
+        {
+            filters: [
+                { memcmp: { offset: 41, bytes: bs58.encode([1])} },
+                { memcmp: { offset: 81, bytes: owner.toBase58()} }
+            ]
+        }
+    );     
+                
+    const coder = new BorshAccountsCoder(idl);
+
+    const tokens = await Promise.all(
+        _.map(stakedEntriesForUser, async account => {                    
+        const stakeEntryData = coder.decode(
+            "StakeEntry",
+            account.account.data
+        );
+        return {
+          mint: stakeEntryData.stakeMint.toBase58()
+        }
+    }))
+        
     return await getNFTMetadataForMany(tokens, conn)
   }
