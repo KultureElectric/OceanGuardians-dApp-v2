@@ -140,7 +140,7 @@ export const HomeView: FC = ({ }) => {
                 </div>
                 {/* Trait Swap */}
                 <div>
-                  <h1 ref={refSwap} className="my-4 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#8aeae2] to-[#3B4F78]">Swap</h1>
+                  <h1 ref={refSwap} className="my-4 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">Swap</h1>
                   {/* NFT Display */}
                   <div className="lg:flex">
                   <NFTDisplay activeNFT={activeNFT} traitReference={traitReference} previewTrait={previewTrait} />
@@ -175,9 +175,22 @@ export const HomeView: FC = ({ }) => {
                                     return (
                                       <option key={trait.name} value={trait.name}>{trait.name}</option>
                                     )
-                                  })}
+                                  })
+                                }
                               </select>
-                              <p className="text-xs text-error my-2">{formError}</p>
+                              <p className="text-xs text-error mb-2">{formError}</p>
+                                {previewTrait && (
+                                  _.map(config[traitReference].traits, (trait) => {
+                                    if (trait.name === previewTrait) {
+                                      return (
+                                        <div className="flex my-4 space-x-2">
+                                        <div className="border border-second mb-1 px-2 py-1 rounded bg-gradient-to-tr from-[#6B8FD6] to-[#3B4F78] text-xs">PRICE: <span className="font-bold text-base">{trait.price}</span> $WAVE</div>
+                                        <div className="border border-second mb-1 px-2 py-1 rounded bg-gradient-to-tr from-[#6B8FD6] to-[#3B4F78] text-xs">MULTIPLIER: <span className="fnt-bold text-base">{trait.multiplier}X</span></div>
+                                        </div>
+                                      )
+                                    }
+                                  }))
+                                }
                               <div className="flex justify-between">
                                 <p className="text-xs">Current trait: <span className="font-bold">{activeNFT.dynamicLayers[traitReference]}</span></p>
                                 {previewTrait && (
@@ -187,7 +200,7 @@ export const HomeView: FC = ({ }) => {
                                   </>
                                 )}
                               </div>
-                              <button type='submit' className={"btn btn-block btn bg-button my-2 " + (swapLoading && " loading")} onClick={handleSubmit}>SWAP</button>
+                              <button type='submit' className={"btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 " + (swapLoading && " loading")} onClick={handleSubmit}>SWAP</button>
                               <p className="text-center text-xs text-inherit stat-title">Powered by Dynamic Labs</p>
                             </form>
                         </div>
@@ -198,7 +211,7 @@ export const HomeView: FC = ({ }) => {
                     {receipt && (
                       <div className="border rounded p-2 border-header">
                         <div className="flex justify-between">
-                          <p className="font-bold text-info">SUCCESS!</p>
+                          <p className="font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">SUCCESS!</p>
                           <div className="space-x-1">
                             <a target="_blank" className="btn btn-info btn-outline btn-xs" href={'https://solscan.io/tx/' + receipt.txHash + '?cluster=mainnet'}>Solscan</a>
                             <a target="_blank" className="btn btn-info btn-outline btn-xs" href={"https://explorer.aleph.im/address/SOL/2BMddnLuE54MZdvbjGoy8RiTdYaZ1rYeVFn1aTcsybvR/message/AGGREGATE/" + receipt.alephHash}>Aleph</a>
