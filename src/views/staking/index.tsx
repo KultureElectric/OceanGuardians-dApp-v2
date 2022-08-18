@@ -8,7 +8,7 @@ export const StakingView: FC = ({ }) => {
                     Staking
                 </h1>
                 <h4 className="md:w-full text-center text-slate-300 my-2">
-                    <p>Simply dApp with a Trait Swap for swapping your favourite traits of the OceanGuardians collection.</p>
+                    <p>Coming soon to mobile</p>
                 </h4>
             </div>
         </div>

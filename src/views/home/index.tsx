@@ -61,10 +61,10 @@ export const HomeView: FC = ({ }) => {
   const handleSubmit = async(e: any) => {
     e.preventDefault();
 
-    // get price for transaction
-    const price = _.find(config[traitReference].traits, (o) => {
-      return o.name === previewTrait
-    }).price
+      // get price for transaction
+      const price = _.find(config[traitReference].traits, (o) => {
+        return o.name === previewTrait
+      })?.price
 
     if (previewTrait === activeNFT.dynamicLayers[traitReference]) {
       setFormError("This trait is already active")

@@ -8,6 +8,7 @@ module.exports = {
       header: '#3B4F78',
       body: '#1a202c',
       second: 'hsla(220, 34%, 35%, 0.25)',
+      third: 'hsla(220, 34%, 35%, 0.75)',
       button: '#4D75C4',
     }
 
