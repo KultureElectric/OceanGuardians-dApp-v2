@@ -2,44 +2,44 @@
   "Location": {
     "order": "z-0",
     "traits": [
-        "Durban",
-        "Costa Rica",
-        "Cape Town",
-        "Portugal",
-        "Indonesia",
-        "Gold Coast",
-        "Brazil",
-        "Alaska",
-        "Hawaii",
-        "Biarritz"
+        {"name": "Brazil", "price": 450, "multiplier": 1},
+        {"name": "CostaRica", "price": 700, "multiplier": 1.1},
+        {"name": "Biarritz", "price": 2800, "multiplier": 1.6},
+        {"name": "Portugal", "price": 2100, "multiplier": 1.5},
+        {"name": "GoldCoast", "price": 1000, "multiplier": 1.2},
+        {"name": "CapeTown", "price": 700, "multiplier": 1.1},
+        {"name": "Durban", "price": 450, "multiplier": 1},
+        {"name": "Hawaii", "price": 2800, "multiplier": 1.6},
+        {"name": "Indonesia", "price": 1000, "multiplier": 1.2},
+        {"name": "Alaska", "price": 1550, "multiplier": 1.4}
     ]
   },
   "Wave": {
     "order": "z-10",
     "traits": [
-        "Medium",
-        "Small",
-        "Large"
+        {"name": "Small", "price": 300, "multiplier": 1},
+        {"name": "Medium", "price": 1000, "multiplier": 1.2},
+        {"name": "Large", "price": 1700, "multiplier": 1.4}
     ]
   },
   "Board": {
     "order": "z-20",
     "traits": [
-        "Blue Fish",
-        "Slick Wood",
-        "Red Fish",
-        "Blue Base",
-        "White Fish",
-        "Floral",
-        "Green Fish",
-        "Yellow Fish",
-        "Hi-Tech",
-        "Orange Fish",
-        "Old Wood",
-        "Dark Fish",
-        "White Base",
-        "Black Marmor",
-        "Blue-G Fish"
+       {"name": "OldWood", "price": 2050, "multiplier": 1.5},
+        {"name": "SlickWood", "price": 1600, "multiplier": 1.4},
+        {"name": "Hi-Tech", "price": 2800, "multiplier": 1.6},
+        {"name": "BlackMarmor", "price": 1350, "multiplier": 1.3},
+        {"name": "BlueBase", "price": 350, "multiplier": 1},
+        {"name": "WhiteBase", "price": 350, "multiplier": 1},
+        {"name": "BlueGFish", "price": 1600, "multiplier": 1.4},
+        {"name": "BlueFish", "price": 650, "multiplier": 1.1},
+        {"name": "RedFish", "price": 650, "multiplier": 1.1},
+        {"name": "WhiteFish", "price": 350, "multiplier": 1},
+        {"name": "YellowFish", "price": 650, "multiplier": 1.1},
+        {"name": "GreenFish", "price": 650, "multiplier": 1.1},
+        {"name": "DarkFish", "price": 1350, "multiplier": 1.3},
+        {"name": "Floral", "price": 2050, "multiplier": 1.5},
+        {"name": "OrangeFish", "price": 1000, "multiplier": 1.2}
     ]
   }
 }

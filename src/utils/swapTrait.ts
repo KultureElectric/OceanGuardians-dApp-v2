@@ -3,9 +3,11 @@ import { NFT } from "hooks/useWalletNFTs"
 import { solana } from "aleph-sdk-ts/accounts";
 import { aggregate } from "aleph-sdk-ts";
 import { ItemType } from "aleph-sdk-ts/messages/message";
-import { Transaction, TransactionInstruction, PublicKey, Connection } from "@solana/web3.js";
+import { Transaction, TransactionInstruction, PublicKey, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import * as splToken from "@solana/spl-token";
+import { waveMint } from "stores/useUserTokenBalanceStore";
 
-export const swapTrait = async(previewTrait: string, traitReference: string, activeNFT: NFT, wallet: WalletContextState, connection: Connection) => {
+export const swapTrait = async(previewTrait: string, traitReference: string, activeNFT: NFT, wallet: WalletContextState, connection: Connection, price: number) => {
     const account = solana.ImportAccountFromPrivateKey(Uint8Array.from(JSON.parse(process.env.NEXT_PUBLIC_ALEPH_KP || '')));
     
     const key = activeNFT.externalMetadata.name?.replace(' #', 'Official');
@@ -15,16 +17,37 @@ export const swapTrait = async(previewTrait: string, traitReference: string, act
     let dynamicLayers = activeNFT.dynamicLayers;
     dynamicLayers[traitReference] = previewTrait;
 
-    const tx = new Transaction().add(new TransactionInstruction({
+    const [ata] = await PublicKey.findProgramAddress(
+        [wallet.publicKey.toBuffer(), splToken.TOKEN_PROGRAM_ID.toBuffer(), waveMint.toBuffer()],
+        splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    let tx = new Transaction();
+
+    tx.add(new TransactionInstruction({
         keys: [{ pubkey: wallet.publicKey, isSigner: true, isWritable: true }],
         data: Buffer.from(memo, 'utf8'),
         programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr")
-    }));
+    }))    
+
+    tx.add(
+        splToken.Token.createTransferCheckedInstruction(
+            splToken.TOKEN_PROGRAM_ID,
+            ata,
+            waveMint,
+            new PublicKey('Gi3cbLCWB8M2TJFShQ47AKVQpbzJoxnHVSUHdGdVCM2C'),
+            wallet.publicKey,
+            [],
+            price * LAMPORTS_PER_SOL,
+            9
+        )
+    );
 
     try {
         const blockhash = await connection.getLatestBlockhash();
         tx.recentBlockhash = blockhash.blockhash
         tx.feePayer = wallet.publicKey;
+                
         await wallet.signTransaction(tx)
         const txHash = await connection.sendRawTransaction(tx.serialize());
 

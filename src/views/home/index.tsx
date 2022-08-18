@@ -23,6 +23,7 @@ import { swapTrait } from 'utils/swapTrait';
 
 // Store
 import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
+import useUserTokenBalanceStore from 'stores/useUserTokenBalanceStore';
 import { notify } from 'utils/notifications';
 
 // Hooks
@@ -43,28 +44,38 @@ export const HomeView: FC = ({ }) => {
   const refSwap = useRef(null);
   
   const { connection } = useConnection();
+  // Balances
   const balance = useUserSOLBalanceStore((s) => s.balance)
   const { getUserSOLBalance } = useUserSOLBalanceStore()
+  const waveBalance = useUserTokenBalanceStore((s) => s.balance)
+  const { getUserTokenBalance } = useUserTokenBalanceStore()
 
   useEffect(() => {
     if (wallet.publicKey) {
       console.log(wallet.publicKey.toBase58())
       getUserSOLBalance(wallet.publicKey, connection)
+      getUserTokenBalance(wallet.publicKey, connection)
     }
-  }, [wallet.publicKey, connection, getUserSOLBalance])
+  }, [wallet.publicKey, connection, getUserSOLBalance, getUserTokenBalance])
 
   const handleSubmit = async(e: any) => {
     e.preventDefault();
 
-    // Add errors - TODO: too little currency error
+    // get price for transaction
+    const price = _.find(config[traitReference].traits, (o) => {
+      return o.name === previewTrait
+    }).price
+
     if (previewTrait === activeNFT.dynamicLayers[traitReference]) {
       setFormError("This trait is already active")
     } else if (previewTrait === "") {
       setFormError("Select a trait")
-    } else {
+    } else if (price && waveBalance < price) {
+      setFormError('Not enough $WAVE');
+    }else {
       setFormError('')
       setSwapLoading(true)
-      const res = await swapTrait(previewTrait, traitReference, activeNFT, wallet, connection);
+      const res = await swapTrait(previewTrait, traitReference, activeNFT, wallet, connection, price);
       setReload(reload + 1)      
       setReceipt(res)
       setSwapLoading(false)
@@ -162,7 +173,7 @@ export const HomeView: FC = ({ }) => {
                                 {
                                   _.map(config[traitReference].traits, trait => {
                                     return (
-                                      <option key={trait} value={trait}>{trait}</option>
+                                      <option key={trait.name} value={trait.name}>{trait.name}</option>
                                     )
                                   })}
                               </select>
