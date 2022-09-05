@@ -18,7 +18,7 @@ const {
     metadata: { Metadata },
   } = programs
   
-  async function getNFTMetadata(
+  export async function getNFTMetadata(
     mint: string,
     conn: Connection,
     pubkey?: string
