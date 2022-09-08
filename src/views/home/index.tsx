@@ -40,6 +40,8 @@ export const HomeView: FC = ({ }) => {
 
   const wallet = useWallet();
   const walletNFTs = useWalletNFTs()
+
+  console.log(walletNFTs.loading);
   
   const refSwap = useRef(null);
   
@@ -105,7 +107,7 @@ export const HomeView: FC = ({ }) => {
                 <div className="bg-second p-2 rounded">
                   <p className="text-center">It appears you don't have any OceanGuardians</p>
                   <div className="flex items-center space-x-4 my-4 justify-center">
-                    <p className="font-bold underline">Get one on</p>
+                    <p className="font-bold underline">Buy one on</p>
                     <a target="_blank" href="https://magiceden.io/marketplace/oceanguardians" className="font-bold bg-me hover:bg-mehover rounded px-6 py-2">Magic Eden</a>
                   </div>
                 </div>

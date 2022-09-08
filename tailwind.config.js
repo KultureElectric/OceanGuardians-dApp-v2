@@ -11,7 +11,8 @@ module.exports = {
       third: 'hsla(220, 34%, 35%, 0.75)',
       button: '#4D75C4',
       me: '#E42575',
-      mehover: '#BA2262'
+      mehover: '#BA2262',
+      blue: '#51ABCB'
     }
 
   },

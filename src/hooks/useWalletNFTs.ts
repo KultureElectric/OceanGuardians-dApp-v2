@@ -33,16 +33,17 @@ const useWalletNFTs = (single?: boolean) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true)
     const fetchNFTs = async () => {
+      setLoading(true)
       const NFTs = await getNFTsByOwner(publicKey, connection)
       setWalletNFTs(NFTs)
       if (single) {
+        setLoading(false);
         return;
       }
       const stakedNFTs = await getStakedNFTs(publicKey, connection);      
       setWalletNFTs(nfts => [...nfts, ...stakedNFTs]);
-      setLoading(false)
+      setLoading(false);
     }
 
     if (publicKey) {
