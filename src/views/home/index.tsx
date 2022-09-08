@@ -39,8 +39,8 @@ export const HomeView: FC = ({ }) => {
   const [swapLoading, setSwapLoading] = useState(false)
 
   const wallet = useWallet();
-  const walletNFTs = useWalletNFTs();
-
+  const walletNFTs = useWalletNFTs()
+  
   const refSwap = useRef(null);
   
   const { connection } = useConnection();
@@ -55,6 +55,7 @@ export const HomeView: FC = ({ }) => {
       console.log(wallet.publicKey.toBase58())
       getUserSOLBalance(wallet.publicKey, connection)
       getUserTokenBalance(wallet.publicKey, connection)
+      setActiveNFT(null)
     }
   }, [wallet.publicKey, connection, getUserSOLBalance, getUserTokenBalance])
 
@@ -98,22 +99,39 @@ export const HomeView: FC = ({ }) => {
         {/* NFT List Section */}
         {wallet.connected ? (   
           <div className="pt-4 md:flex md:flex-col md:items-center">
-            <p className="font-bold py-2 md:text-lg">Your NFTs</p>
-            <div className="flex items-center space-x-2 overflow-x-auto touch-pan-x">
-            {walletNFTs.length ? (
-              _.map(walletNFTs, nft => {                    
-                return <ListItem nft={nft} reload={reload} activeNFT={activeNFT} setActiveNFT={(nft: NFT) => {setActiveNFT(nft)}} key={nft.externalMetadata.name} />
-              })
+            {!walletNFTs.loading ? (
+              <>
+              {walletNFTs.walletNFTs.length === 0 ? (
+                <div className="bg-second p-2 rounded">
+                  <p className="text-center">It appears you don't have any OceanGuardians</p>
+                  <div className="flex items-center space-x-4 my-4 justify-center">
+                    <p className="font-bold underline">Get one on</p>
+                    <a target="_blank" href="https://magiceden.io/marketplace/oceanguardians" className="font-bold bg-me hover:bg-mehover rounded px-6 py-2">Magic Eden</a>
+                  </div>
+                </div>
+              ) : (
+                <>
+                <p className="font-bold py-2 md:text-lg">Your NFTs</p>
+                <div className="flex items-center space-x-2 overflow-x-auto touch-pan-x md:max-w-screen-md">
+                  {_.map(walletNFTs.walletNFTs, nft => {                    
+                    return <ListItem nft={nft} reload={reload} activeNFT={activeNFT} setActiveNFT={(nft: NFT) => {setActiveNFT(nft)}} key={nft.externalMetadata.name} />
+                  })}
+                </div>
+                </>
+              )}
+              </>
             ) : (
               <>
-              <div className="w-36 md:w-44 aspect-square rounded bg-header animate-pulse"></div>
-              <div className="w-36 md:w-44 aspect-square rounded bg-header animate-pulse"></div>
+              <p className="font-bold py-2 md:text-lg">Your NFTs</p>
+              <div className="flex items-center space-x-2 overflow-x-auto touch-pan-x md:max-w-screen-md">
+                <div className="w-36 md:w-44 aspect-square rounded bg-header animate-pulse"></div>
+                <div className="w-36 md:w-44 aspect-square rounded bg-header animate-pulse"></div>
+              </div>
               </>
             )}
-            </div>
             {/* Active NFT Section */}
             {activeNFT ? (
-              <div className="pt-4 md:w-3/4">
+              <div className="pt-4 md:max-w-screen-md">
                 <h1 className="pt-4 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">{activeNFT.externalMetadata.name}</h1>
                 {/* First Dynamic Attributes with different Styling */}
                 <p className="font-bold py-2 md:text-lg">Attributes</p>
@@ -229,7 +247,11 @@ export const HomeView: FC = ({ }) => {
                 </div>
               </div>
             ) : ( // Select an NFT first
-              <p className="text-center py-8 italic">Click on one of your NFTs <FontAwesomeIcon className='animate-bounce' icon={faHandPointUp} size="lg" /></p>
+            <>
+              {walletNFTs.walletNFTs.length !== 0 && (
+                <p className="text-center py-8 italic">Click on one of your NFTs <FontAwesomeIcon className='animate-bounce' icon={faHandPointUp} size="lg" /></p>
+              )}
+            </>
             )
             }
           </div>

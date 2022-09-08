@@ -22,14 +22,16 @@ const useStaking = () => {
   const programID = new PublicKey('CsfVevZy66ARUY74VCw8Hqxzjkjis9qLAN3bj49m5wTB');
   const distributorProgramID = new PublicKey('DEvYCMc1BQ7uN3hHgdmHgiNQee2vydMdX3xg9ZJf42c8')
 
+  const [loading, setLoading] = useState(true)
   const [userStakedEntries, setUserStakedEntries] = useState([]);
-  const [totalClaimableRewards, setTotalClaimableRewards] = useState(0)
+  const [totalClaimableRewards, setTotalClaimableRewards] = useState(0);
 
   const provider = new AnchorProvider(connection, wallet, {});
   const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);    
   const poolAuthority = new PublicKey("CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK");
 
   useEffect(() => {
+    setLoading(true);
     const fetchStaking = async() => {
       const [stakePoolPda] = await PublicKey.findProgramAddress(
         [Buffer.from("stake-pool"), poolAuthority.toBuffer()],
@@ -100,6 +102,8 @@ const useStaking = () => {
               claimableRewards: claimableRewards
             }])             
       }));
+
+      setLoading(false);
     }
 
     if (wallet.publicKey) {
@@ -108,7 +112,7 @@ const useStaking = () => {
     }
   }, [wallet.publicKey]);
 
-  return [userStakedEntries, totalClaimableRewards];
+  return [userStakedEntries, totalClaimableRewards, loading];
 }
 
 export default useStaking

@@ -4,13 +4,17 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandPointUp } from "@fortawesome/free-solid-svg-icons";
 import useStaking from "hooks/useStaking";
+import useWalletNFTs from "hooks/useWalletNFTs";
 
 export const StakingView: FC = ({ }) => {
     const wallet = useWallet();
-    const [totalClaimableRewards, userStakedEntries] = useStaking();
+    const [totalClaimableRewards, userStakedEntries, loading] = useStaking();
+    const walletNFTs = useWalletNFTs(true); // true in order to skip staked NFTs
+
+    console.log(walletNFTs);
     console.log(totalClaimableRewards);
     console.log(userStakedEntries);
-    
+    console.log(loading);
     
 
     return (
@@ -24,7 +28,11 @@ export const StakingView: FC = ({ }) => {
                 </h4>
                 {wallet.connected ? (
                     // Staking Stats
-                    <div></div>
+                    <div>
+                      {
+
+                      }
+                    </div>
                 ) : (
                   <>
                     <div className='mx-auto mt-5 border rounded-md'>

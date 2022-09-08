@@ -26,17 +26,23 @@ export type NFT = {
   dynamicLayers: {}
 }
 
-const useWalletNFTs = () => {
+const useWalletNFTs = (single?: boolean) => {
   const { connection } = useConnection();  
   const { publicKey } = useWallet();
   const [walletNFTs, setWalletNFTs] = useState<Array<NFT>>([])
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true)
     const fetchNFTs = async () => {
       const NFTs = await getNFTsByOwner(publicKey, connection)
       setWalletNFTs(NFTs)
+      if (single) {
+        return;
+      }
       const stakedNFTs = await getStakedNFTs(publicKey, connection);      
-      setWalletNFTs(nfts => [...nfts, ...stakedNFTs])
+      setWalletNFTs(nfts => [...nfts, ...stakedNFTs]);
+      setLoading(false)
     }
 
     if (publicKey) {
@@ -45,7 +51,9 @@ const useWalletNFTs = () => {
     }
   }, [publicKey])
 
-  return walletNFTs
+
+
+  return {walletNFTs, loading}
 }
 
 export default useWalletNFTs;

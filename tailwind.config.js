@@ -10,6 +10,8 @@ module.exports = {
       second: 'hsla(220, 34%, 35%, 0.25)',
       third: 'hsla(220, 34%, 35%, 0.75)',
       button: '#4D75C4',
+      me: '#E42575',
+      mehover: '#BA2262'
     }
 
   },
