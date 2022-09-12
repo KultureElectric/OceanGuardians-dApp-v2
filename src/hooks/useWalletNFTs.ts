@@ -23,7 +23,11 @@ export type NFT = {
     }
     seller_fee_basis_points: number
   },
-  dynamicLayers: {}
+  dynamicLayers: {
+    Location: string,
+    Wave: string,
+    Board: string
+  }
 }
 
 const useWalletNFTs = (single?: boolean) => {

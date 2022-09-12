@@ -40,8 +40,6 @@ export const HomeView: FC = ({ }) => {
 
   const wallet = useWallet();
   const walletNFTs = useWalletNFTs()
-
-  console.log(walletNFTs.loading);
   
   const refSwap = useRef(null);
   
@@ -223,7 +221,7 @@ export const HomeView: FC = ({ }) => {
                                   </>
                                 )}
                               </div>
-                              <button type='submit' className={"btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 " + (swapLoading && " loading")} onClick={handleSubmit}>SWAP</button>
+                              <button type='submit' className={"btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] hover:brightness-95 my-2 " + (swapLoading && " loading")} onClick={handleSubmit}>SWAP</button>
                               <p className="text-center text-xs text-inherit stat-title">Powered by Dynamic Labs</p>
                             </form>
                         </div>

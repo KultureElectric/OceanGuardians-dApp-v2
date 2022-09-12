@@ -7,6 +7,9 @@ import _ from 'lodash';
 import useStaking from "hooks/useStaking";
 import useWalletNFTs from "hooks/useWalletNFTs";
 
+import ListItemStaking from "components/ListItemStaking";
+
+import config from "../../../public/traits/config.json"
 
 export const StakingView: FC = ({ }) => {
     const wallet = useWallet();
@@ -68,18 +71,27 @@ export const StakingView: FC = ({ }) => {
                             <div className="flex justify-between">
                               <p className="font-bold text-lg mb-4 mt-2">{`Staked NFTs (${staking.userStakedEntries.length})`}</p>
                               <div>
-                                <p>Claimable Rewards</p>
+                                <p className="text-right">Claimable Rewards</p>
                                 <p className="text-xl font-bold text-blue text-right">{staking.totalClaimableRewards.toFixed(2)}</p>
                               </div>
                             </div>
-                            <button className="btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2">Claim all</button>
-                            <div className="space-y-2 mt-2">
+                            <button className="btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
+                            <div className="space-y-2.5 mt-4">
                               {_.map(staking.userStakedEntries, (entry) => {
                                 console.log(entry);
                                 return (                                  
-                                  <div className="bg-second mb-1 px-2 py-1 rounded flex justify-between items-center" key={entry.nft.externalMetadata.name}>
-                                    <p>{entry.nft.externalMetadata.name}</p>
-                                    <button className="my-2 btn btn-sm bg-button">Unstake</button>
+                                  <div className="bg-second mb-1 rounded flex" key={entry.nft.externalMetadata.name}>
+                                    <ListItemStaking nft={entry.nft}/>
+                                    <div className="w-full flex flex-col justify-between px-2 py-1">
+                                      <p className="font-bold">{entry.nft.externalMetadata.name}</p>
+                                      <div className="flex items-end justify-between">
+                                        <div className="text-xs">
+                                          <p>Claimable Rewards<br/><span className="text-base text-blue font-bold">{entry.claimableRewards.toFixed(2)}</span></p>
+                                          <p>Multiplier<br/><span className="text-base text-blue font-bold">{entry.rewardEntry.multiplier.toNumber() / 100}</span></p>
+                                        </div>
+                                        <button className="my-2 btn btn-sm bg-button hover:bg-buttonhover ml-2">Unstake</button>
+                                      </div>
+                                    </div>
                                   </div>
                                 )
                               })}
@@ -89,12 +101,26 @@ export const StakingView: FC = ({ }) => {
                         {walletNFTs.walletNFTs.length > 0 && ( // unstaked NFTs only shown if existant
                           <div className="bg-second p-2 rounded mt-8 mb-4">
                             <p className="font-bold text-lg mb-4 mt-2">{`Unstaked NFTs (${walletNFTs.walletNFTs.length})`}</p> 
-                            <div className="space-y-2 mt-2">
+                            <div className="space-y-2.5 mt-2">
                               {_.map(walletNFTs.walletNFTs, (nft) => {
+                                let multiplier = 1;
+
+                                _.forEach(Object.keys(config), (key) => {
+                                  multiplier *= _.find(config[key].traits, o => {
+                                    return o.name === nft.dynamicLayers[key]
+                                  }).multiplier;
+                                })
+                                
                                 return (                                  
-                                  <div className="bg-second mb-1 px-2 py-1 rounded flex justify-between items-center" key={nft.externalMetadata.name}>
-                                    <p>{nft.externalMetadata.name}</p>
-                                    <button className="my-2 btn btn-sm bg-button">Stake</button>
+                                  <div className="bg-second rounded flex" key={nft.externalMetadata.name}>
+                                    <ListItemStaking nft={nft}/>
+                                    <div className="w-full flex flex-col justify-between px-2 py-1">
+                                      <p className="font-bold mt-2">{nft.externalMetadata.name}</p>
+                                      <div className="flex items-center justify-between">
+                                        <p className="text-xs">Multiplier<br/><span className="text-blue font-bold text-base">{multiplier.toFixed(2)}</span></p>
+                                        <button className="my-2 btn btn-sm bg-button hover:bg-buttonhover ml-2">Stake</button>
+                                      </div>
+                                    </div>
                                   </div>
                                 )
                               })}
