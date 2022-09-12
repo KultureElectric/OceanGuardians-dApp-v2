@@ -31,7 +31,7 @@ const {
 
       // Fetch Dynamic Layers
       const id = externalMetadata.name.replace(' #', 'Official');
-      const dynamicLayers: {} = (await aggregate.Get({address: alephAcc.address, keys: [id], APIServer: "https://api2.aleph.im"}))[id];      
+      const dynamicLayers: {Wave: string, Location: string, Board: string} = (await aggregate.Get({address: alephAcc.address, keys: [id], APIServer: "https://api2.aleph.im"}))[id];      
 
       return {
         pubkey: pubkey ? new PublicKey(pubkey) : undefined,
