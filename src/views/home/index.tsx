@@ -89,7 +89,7 @@ export const HomeView: FC = ({ }) => {
 
   return (
     <div className="md:hero mx-auto p-4 relative w-screen">
-      <div className="md:hero-content flex flex-col">
+      <div className="md:hero-content flex flex-col w-full">
         <h1 className="text-center text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">
           Dashboard
         </h1>
@@ -98,7 +98,7 @@ export const HomeView: FC = ({ }) => {
         </h4>
         {/* NFT List Section */}
         {wallet.connected ? (   
-          <div className="pt-4 md:flex md:flex-col md:items-center">
+          <div className="pt-4 md:flex md:flex-col md:items-center md:w-mdscreencustom lg:w-auto">
             {!walletNFTs.loading ? (
               <>
               {walletNFTs.walletNFTs.length === 0 ? (
@@ -112,7 +112,7 @@ export const HomeView: FC = ({ }) => {
               ) : (
                 <>
                 <p className="font-bold py-2 md:text-lg">Your NFTs</p>
-                <div className="flex items-center space-x-2 overflow-x-auto touch-pan-x md:max-w-screen-md">
+                <div className="flex items-center space-x-2 overflow-x-auto touch-pan-x md:w-3/4">
                   {_.map(walletNFTs.walletNFTs, nft => {                    
                     return <ListItem nft={nft} reload={reload} activeNFT={activeNFT} setActiveNFT={(nft: NFT) => {setActiveNFT(nft)}} key={nft.externalMetadata.name} />
                   })}
@@ -123,7 +123,7 @@ export const HomeView: FC = ({ }) => {
             ) : (
               <>
               <p className="font-bold py-2 md:text-lg">Your NFTs</p>
-              <div className="flex items-center space-x-2 overflow-x-auto touch-pan-x md:max-w-screen-md">
+              <div className="flex items-center space-x-2 overflow-x-auto touch-pan-x">
                 <div className="w-36 md:w-44 aspect-square rounded bg-header animate-pulse"></div>
                 <div className="w-36 md:w-44 aspect-square rounded bg-header animate-pulse"></div>
               </div>
@@ -131,7 +131,7 @@ export const HomeView: FC = ({ }) => {
             )}
             {/* Active NFT Section */}
             {activeNFT ? (
-              <div className="pt-4 md:max-w-screen-md">
+              <div className="pt-4 md:w-3/4">
                 <h1 className="pt-4 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">{activeNFT.externalMetadata.name}</h1>
                 {/* First Dynamic Attributes with different Styling */}
                 <p className="font-bold py-2 md:text-lg">Attributes</p>

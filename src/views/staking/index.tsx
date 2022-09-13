@@ -18,7 +18,7 @@ export const StakingView: FC = ({ }) => {
 
     return (
         <div className="md:hero mx-auto p-4 relative w-screen">
-            <div className="md:hero-content flex flex-col">
+            <div className="md:hero-content flex flex-col w-full">
                 <h1 className="text-center text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">
                     Staking
                 </h1>
@@ -26,37 +26,39 @@ export const StakingView: FC = ({ }) => {
                     <p>Stake your OceanGuardians</p>
                 </h4>
                 {wallet.connected ? (
-                  <div className="flex flex-col space-y-2 mt-6">
+                  <div className="pt-4 md:flex md:flex-col md:items-center md:w-full"> {/* Important Css classes */}
                     {!staking.loading && !walletNFTs.loading ? (
                       <>
-                        <div className="bg-second p-2 rounded">
+                      <div className="space-y-2 md:space-y-0 md:space-x-2 md:flex md:flex-row md:items-center md:justify-center md:w-3/4">
+                        <div className={"bg-second p-2 rounded " + (staking.userStakedEntries.length !== 0 ? "md:w-1/3" : "md:w-1/2")}>
                           <p className="font-bold">Total Staked</p>
                           <p className="text-2xl font-bold text-blue">30%</p>
                           <p>165 / 555</p>
                         </div>
                       {staking.userStakedEntries.length !== 0 ? (
                       <>
-                        <div className="bg-second p-2 rounded">
+                        <div className="bg-second p-2 rounded md:w-1/3">
                           <p className="font-bold">You've Staked</p>
                           <p className="text-2xl font-bold text-blue">{staking.userStakedEntries.length}</p>
                           <p>OceanGuardian NFTs</p>
                         </div>
-                        <div className="bg-second p-2 rounded">
-                          <p className="font-bold">Total Daily Accrual Rate</p>
+                        <div className="bg-second p-2 rounded md:w-1/3">
+                          <p className="font-bold">Daily Accrual Rate</p>
                           <p className="text-2xl font-bold text-blue">{staking.totalDailyAccrualRate.toFixed(2)}</p>
-                          <p>Swap Traits to increase your rewards</p>
+                          <p>$WAVE</p>
                         </div>
                       </>
                       ) : (
                       <>
-                        <div className="bg-second p-2 rounded">
+                        <div className="bg-second p-2 rounded md:w-1/2">
                           <p className="font-bold text-xl">Ready to Stake?</p>
                           <p className="my-2">Stake your OceanGuardians and earn $WAVE</p>
                         </div>
                       </>
                       )}
+                      </div>
                       {walletNFTs.walletNFTs.length === 0 && staking.userStakedEntries.length === 0 ? (
-                        <div className="!mt-8 bg-second p-2 rounded">
+                        <div className="!mt-8 bg-second p-2 rounded md:w-3/4">
                           <p className="text-center">It appears you don't have any OceanGuardians</p>
                           <div className="flex items-center space-x-4 my-4 justify-center">
                             <p className="font-bold underline">Buy one on</p>
@@ -65,17 +67,21 @@ export const StakingView: FC = ({ }) => {
                         </div>
                       ) : (
                         // NFT display
-                        <div className="!mt-8">
+                        <div className="!mt-8 md:w-3/4">
                         {staking.userStakedEntries.length > 0 && ( // staked NFTs only shown if existant
-                          <div className="bg-second p-2 rounded">
+                          <div className="bg-second p-2 md:p-4 rounded">
                             <div className="flex justify-between">
-                              <p className="font-bold text-lg mb-4 mt-2">{`Staked NFTs (${staking.userStakedEntries.length})`}</p>
-                              <div>
+                              <p className="font-bold text-lg md:text-2xl mb-4 mt-2">{`Staked NFTs (${staking.userStakedEntries.length})`}</p>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex flex-col">
                                 <p className="text-right">Claimable Rewards</p>
                                 <p className="text-xl font-bold text-blue text-right">{staking.totalClaimableRewards.toFixed(2)}</p>
+                                </div>
+                                <button className="hidden md:block w-40 btn btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
+
                               </div>
                             </div>
-                            <button className="btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
+                            <button className="md:hidden btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
                             <div className="space-y-2.5 mt-4">
                               {_.map(staking.userStakedEntries, (entry) => {
                                 console.log(entry);
@@ -83,13 +89,13 @@ export const StakingView: FC = ({ }) => {
                                   <div className="bg-second mb-1 rounded flex" key={entry.nft.externalMetadata.name}>
                                     <ListItemStaking nft={entry.nft}/>
                                     <div className="w-full flex flex-col justify-between px-2 py-1">
-                                      <p className="font-bold">{entry.nft.externalMetadata.name}</p>
+                                      <p className="font-bold md:text-xl">{entry.nft.externalMetadata.name}</p>
                                       <div className="flex items-end justify-between">
-                                        <div className="text-xs">
-                                          <p>Claimable Rewards<br/><span className="text-base text-blue font-bold">{entry.claimableRewards.toFixed(2)}</span></p>
-                                          <p>Multiplier<br/><span className="text-base text-blue font-bold">{entry.rewardEntry.multiplier.toNumber() / 100}</span></p>
+                                        <div className="text-xs md:text-base">
+                                          <p>Claimable Rewards<br/><span className="text-base md:text-lg text-blue font-bold">{entry.claimableRewards.toFixed(2)}</span></p>
+                                          <p>Multiplier<br/><span className="text-base md:text-lg text-blue font-bold">{entry.rewardEntry.multiplier.toNumber() / 100}</span></p>
                                         </div>
-                                        <button className="my-2 btn btn-sm bg-button hover:bg-buttonhover ml-2">Unstake</button>
+                                        <button className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Unstake</button>
                                       </div>
                                     </div>
                                   </div>
@@ -100,7 +106,7 @@ export const StakingView: FC = ({ }) => {
                         )}
                         {walletNFTs.walletNFTs.length > 0 && ( // unstaked NFTs only shown if existant
                           <div className="bg-second p-2 rounded mt-8 mb-4">
-                            <p className="font-bold text-lg mb-4 mt-2">{`Unstaked NFTs (${walletNFTs.walletNFTs.length})`}</p> 
+                            <p className="font-bold text-lg md:text-2xl mb-4 md:mb-6 mt-2">{`Unstaked NFTs (${walletNFTs.walletNFTs.length})`}</p> 
                             <div className="space-y-2.5 mt-2">
                               {_.map(walletNFTs.walletNFTs, (nft) => {
                                 let multiplier = 1;
@@ -115,10 +121,10 @@ export const StakingView: FC = ({ }) => {
                                   <div className="bg-second rounded flex" key={nft.externalMetadata.name}>
                                     <ListItemStaking nft={nft}/>
                                     <div className="w-full flex flex-col justify-between px-2 py-1">
-                                      <p className="font-bold mt-2">{nft.externalMetadata.name}</p>
+                                      <p className="font-bold mt-2 md:text-xl">{nft.externalMetadata.name}</p>
                                       <div className="flex items-center justify-between">
-                                        <p className="text-xs">Multiplier<br/><span className="text-blue font-bold text-base">{multiplier.toFixed(2)}</span></p>
-                                        <button className="my-2 btn btn-sm bg-button hover:bg-buttonhover ml-2">Stake</button>
+                                        <p className="text-xs md:text-base">Multiplier<br/><span className="text-blue font-bold text-base md:text-lg">{multiplier.toFixed(2)}</span></p>
+                                        <button className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Stake</button>
                                       </div>
                                     </div>
                                   </div>
@@ -131,11 +137,11 @@ export const StakingView: FC = ({ }) => {
                       )}
                       </>
                     ) : (
-                      <>
-                      <div className="bg-second p-2 rounded animate-pulse h-24"></div>
-                      <div className="bg-second p-2 rounded animate-pulse h-24"></div>
-                      <svg className="!mt-6 place-self-center animate-spin h-5 w-5 bg-blue" viewBox="0 0 24 24"></svg>
-                      </>
+                      <div className="space-y-2 flex flex-col md:items-center md:w-2/3">
+                        <div className="bg-second p-2 rounded animate-pulse h-24 md:w-full"></div>
+                        <div className="bg-second p-2 rounded animate-pulse h-24 md:w-full"></div>
+                        <svg className="!mt-6 place-self-center animate-spin h-5 w-5 bg-blue" viewBox="0 0 24 24"></svg>
+                      </div>
                     )
                     }
                   </div>

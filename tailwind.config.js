@@ -3,7 +3,11 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   darkMode: "media",
   theme: {
-    extend: {},
+    extend: {
+      spacing: {
+      'mdscreencustom': '43rem'
+      }
+    },
     colors: {
       header: '#3B4F78',
       body: '#1a202c',
@@ -14,8 +18,7 @@ module.exports = {
       me: '#E42575',
       mehover: '#BA2262',
       blue: '#51ABCB',
-    }
-
+    },
   },
   plugins: [
     require('daisyui'),
