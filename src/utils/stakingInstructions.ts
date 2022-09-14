@@ -1,4 +1,4 @@
-import { AnchorProvider, Provider, Program, BN, utils } from "@project-serum/anchor";
+import { AnchorProvider, Program, BN, utils } from "@project-serum/anchor";
 import { PublicKey, Keypair, Connection, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY, sendAndConfirmRawTransaction } from "@solana/web3.js";
 import { StakePool } from "../../public/stake_pool";
 import { OgRewardDistributor } from "../../public/og_reward_distributor";
@@ -9,7 +9,7 @@ import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { getOrCreateATA, getATAAddressSync } from "@saberhq/token-utils";
-import { SolanaProvider } from "@saberhq/solana-contrib"
+import { SolanaProvider, Provider } from "@saberhq/solana-contrib"
 import {
     findTokenManagerAddress,
     findMintCounterId,
@@ -41,7 +41,7 @@ const connection = new Connection(process.env.NEXT_PUBLIC_ENDPOINT, "confirmed")
 export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: number) => {
     const stakeMintKeypair = Keypair.generate();
 
-    const provider: Provider = new AnchorProvider(connection, wallet, {});
+    const provider = new AnchorProvider(connection, wallet, {});
     const program = new Program<StakePool>(idl, programID, provider);
     const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);    
 
@@ -245,7 +245,7 @@ export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: numb
 
 export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
     const provider = new AnchorProvider(connection, wallet, {});
-    const saberProvider = SolanaProvider.init({
+    const saberProvider: Provider = SolanaProvider.init({
         connection: connection,
         wallet: wallet
     })
@@ -456,7 +456,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
 
 export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
     const provider = new AnchorProvider(connection, wallet, {});
-    const saberProvider = SolanaProvider.init({
+    const saberProvider: Provider = SolanaProvider.init({
         connection: connection,
         wallet: wallet
     })
