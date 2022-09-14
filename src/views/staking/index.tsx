@@ -1,20 +1,41 @@
-import { useWallet } from "@solana/wallet-adapter-react"
+import { useWallet, useConnection } from "@solana/wallet-adapter-react"
 import { FC } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandPointUp } from "@fortawesome/free-solid-svg-icons";
 import _ from 'lodash';
+import { PublicKey } from "@solana/web3.js";
 import useStaking from "hooks/useStaking";
 import useWalletNFTs from "hooks/useWalletNFTs";
 
 import ListItemStaking from "components/ListItemStaking";
 
 import config from "../../../public/traits/config.json"
+import { claimRewards, stakeNFTs, unstakeNFTs } from "utils/stakingInstructions";
 
 export const StakingView: FC = ({ }) => {
+    const connection = useConnection();
     const wallet = useWallet();
     const staking = useStaking();
     const walletNFTs = useWalletNFTs(true); // true in order to skip staked NFTs
+
+    const claimStakingRewards = async() => {
+      let nftIds = Array<PublicKey>();
+
+      _.forEach(staking.userStakedEntries, entry => {        
+        nftIds.push(entry.parsed.originalMint)
+      })
+
+      const res = await claimRewards(nftIds, wallet);      
+    }
+
+    const stake = async(nftMint: PublicKey, multiplier: number) => {
+      const res = await stakeNFTs(nftMint, wallet, multiplier)
+    }
+
+    const unstake = async(nftMint: PublicKey) => {
+      const res = await unstakeNFTs(nftMint, wallet)
+    }
 
     return (
         <div className="md:hero mx-auto p-4 relative w-screen">
@@ -77,11 +98,11 @@ export const StakingView: FC = ({ }) => {
                                 <p className="text-right">Claimable Rewards</p>
                                 <p className="text-xl font-bold text-blue text-right">{staking.totalClaimableRewards.toFixed(2)}</p>
                                 </div>
-                                <button className="hidden md:block w-40 btn btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
+                                <button onClick={claimStakingRewards} className="hidden md:block w-40 btn btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
 
                               </div>
                             </div>
-                            <button className="md:hidden btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
+                            <button onClick={claimStakingRewards} className="md:hidden btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
                             <div className="space-y-2.5 mt-4">
                               {_.map(staking.userStakedEntries, (entry) => {
                                 console.log(entry);
@@ -95,7 +116,7 @@ export const StakingView: FC = ({ }) => {
                                           <p>Claimable Rewards<br/><span className="text-base md:text-lg text-blue font-bold">{entry.claimableRewards.toFixed(2)}</span></p>
                                           <p>Multiplier<br/><span className="text-base md:text-lg text-blue font-bold">{entry.rewardEntry.multiplier.toNumber() / 100}</span></p>
                                         </div>
-                                        <button className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Unstake</button>
+                                        <button onClick={() => unstake(entry.parsed.originalMint)} className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Unstake</button>
                                       </div>
                                     </div>
                                   </div>
@@ -124,7 +145,7 @@ export const StakingView: FC = ({ }) => {
                                       <p className="font-bold mt-2 md:text-xl">{nft.externalMetadata.name}</p>
                                       <div className="flex items-center justify-between">
                                         <p className="text-xs md:text-base">Multiplier<br/><span className="text-blue font-bold text-base md:text-lg">{multiplier.toFixed(2)}</span></p>
-                                        <button className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Stake</button>
+                                        <button onClick={() => stake(nft.mint, multiplier)} className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Stake</button>
                                       </div>
                                     </div>
                                   </div>

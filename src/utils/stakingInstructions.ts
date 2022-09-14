@@ -1,4 +1,4 @@
-import { AnchorProvider, Program, BN, utils } from "@project-serum/anchor";
+import { AnchorProvider, Provider, Program, BN, utils } from "@project-serum/anchor";
 import { PublicKey, Keypair, Connection, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY, sendAndConfirmRawTransaction } from "@solana/web3.js";
 import { StakePool } from "../../public/stake_pool";
 import { OgRewardDistributor } from "../../public/og_reward_distributor";
@@ -9,6 +9,7 @@ import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { getOrCreateATA, getATAAddressSync } from "@saberhq/token-utils";
+import { SolanaProvider } from "@saberhq/solana-contrib"
 import {
     findTokenManagerAddress,
     findMintCounterId,
@@ -21,34 +22,30 @@ import {
     TokenManagerKind,
     withRemainingAccountsForReturn,
 } from "@cardinal/token-manager/dist/cjs/programs/tokenManager";
-import { SolanaProvider } from "@saberhq/solana-contrib";
 import { tokenManager } from "@cardinal/token-manager/dist/cjs/programs";
 import _ from "lodash";
-const idl: StakePool = require("../stake_pool.json");
-const distributorIdl: OgRewardDistributor = require("../og_reward_distributor.json");
+
+import { notify } from "./notifications";
+
+const idl: StakePool = require("../../public/stake_pool.json");
+const distributorIdl: OgRewardDistributor = require("../../public/og_reward_distributor.json");
 
 const programID = new PublicKey('CsfVevZy66ARUY74VCw8Hqxzjkjis9qLAN3bj49m5wTB');
 const distributorProgramID = new PublicKey('DEvYCMc1BQ7uN3hHgdmHgiNQee2vydMdX3xg9ZJf42c8');
-const poolAccount = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.REACT_APP_STAKE_POOL_KP || '')));
+const poolAccount = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.NEXT_PUBLIC_STAKE_POOL_KP || '')));
 
-const connection = new Connection(process.env.REACT_APP_SOLANA_RPC_HOST, "confirmed");
+const connection = new Connection(process.env.NEXT_PUBLIC_ENDPOINT, "confirmed");
 
 // stake function
 
-export const stakeNFTs = async(nft: any, wallet: any, multiplier: number) => {
+export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: number) => {
     const stakeMintKeypair = Keypair.generate();
 
-    const provider = new AnchorProvider(connection, wallet, {});
+    const provider: Provider = new AnchorProvider(connection, wallet, {});
     const program = new Program<StakePool>(idl, programID, provider);
     const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);    
 
-    const saberProvider = SolanaProvider.init({
-        connection: connection,
-        wallet: wallet,
-    });
-
     let transaction = new Transaction();
-
 
     // Init Stake Entry
 
@@ -60,36 +57,26 @@ export const stakeNFTs = async(nft: any, wallet: any, multiplier: number) => {
         );    
 
     const[stakeEntryPda] = await PublicKey.findProgramAddress(
-        [Buffer.from("stake-entry"), stakePoolPda.toBuffer(), nft.mint.toBuffer(), wallet.publicKey.toBuffer()],
+        [Buffer.from("stake-entry"), stakePoolPda.toBuffer(), nftMint.toBuffer(), wallet.publicKey.toBuffer()],
         programID
     );
 
-    const NFTMetadata = await metaplex.Metadata.getPDA(nft.mint);
+    const NFTMetadata = await metaplex.Metadata.getPDA(nftMint);
 
-    const stakeEntryAcc = await (async () => {
-        try {
-            return await program.account.stakeEntry.fetch(stakeEntryPda)
-        } catch (error) {            
-            return null;
-        }
-    })();        
-    
-    if (!stakeEntryAcc) { 
-        console.log("Init Stake Entry"); 
-            
-        transaction.add(
-            program.instruction.initEntry(wallet.publicKey, {
-                accounts: {
-                    stakeEntry: stakeEntryPda,
-                    stakePool: stakePoolPda,
-                    originalMint: nft.mint,
-                    originalMintMetadata: NFTMetadata,
-                    payer: wallet.publicKey,
-                    systemProgram: SystemProgram.programId
-                },
+    // Init Stake Entry
+
+    transaction.add(
+        await program.methods.initEntry(wallet.publicKey)
+            .accounts({
+                stakeEntry: stakeEntryPda,
+                stakePool: stakePoolPda,
+                originalMint: nftMint,
+                originalMintMetadata: NFTMetadata,
+                payer: wallet.publicKey,
+                systemProgram: SystemProgram.programId
             })
-        )
-    }
+            .instruction()
+    )
 
     // Init Reward Entry
     
@@ -101,35 +88,21 @@ export const stakeNFTs = async(nft: any, wallet: any, multiplier: number) => {
     const [rewardEntryPda] = await PublicKey.findProgramAddress(
         [utils.bytes.utf8.encode("reward-entry"), rewardDistributorPda.toBuffer(), stakeEntryPda.toBuffer()],
         distributorProgram.programId
-        );    
-
-    const rewardEntryAcc = await (async () => {
-        try {
-            return await distributorProgram.account.rewardEntry.fetch(rewardEntryPda)
-        } catch (error) {            
-            return null;
-        }
-    })();        
+        );        
     
-    // Init Reward Entry
-
-    if (!rewardEntryAcc) {     
-        console.log("Init Reward Entry");
-            
-        transaction.add(
-            distributorProgram.instruction.initRewardEntry({multiplier: (new BN(multiplier * 100))}, {
-                accounts: {
-                    rewardEntry: rewardEntryPda,
-                    stakeEntry: stakeEntryPda,
-                    rewardDistributor: rewardDistributorPda,
-                    authority: poolAccount.publicKey,
-                    payer: wallet.publicKey,
-                    systemProgram: SystemProgram.programId
-                },
-                signers: [wallet, poolAccount]
-                })
-        )
-    }
+    transaction.add(
+        await distributorProgram.methods.initRewardEntry({multiplier: new BN(multiplier * 100)})
+            .accounts({
+                rewardEntry: rewardEntryPda,
+                stakeEntry: stakeEntryPda,
+                rewardDistributor: rewardDistributorPda,
+                authority: poolAccount.publicKey,
+                payer: wallet.publicKey,
+                systemProgram: SystemProgram.programId
+            })
+            .signers([wallet, poolAccount])
+            .instruction()
+    )
 
     // Init Stake Mint
 
@@ -143,11 +116,11 @@ export const stakeNFTs = async(nft: any, wallet: any, multiplier: number) => {
     });    
 
     transaction.add(
-        program.instruction.initStakeMint({
-            accounts: {
+        await program.methods.initStakeMint()
+            .accounts({
                 stakeEntry: stakeEntryPda,
                 stakePool: stakePoolPda,
-                originalMint: nft.mint,
+                originalMint: nftMint,
                 originalMintMetadata: NFTMetadata,
                 stakeMint: stakeMintKeypair.publicKey,
                 stakeMintMetadata: stakeMintMetadataId,
@@ -160,33 +133,38 @@ export const stakeNFTs = async(nft: any, wallet: any, multiplier: number) => {
                 systemProgram: SystemProgram.programId,
                 tokenMetadataProgram: metaplex.MetadataProgram.PUBKEY,
                 associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
-            },
-            signers: [stakeMintKeypair, wallet]
-        })
+            })
+            .signers([stakeMintKeypair, wallet])
+            .instruction()
     );
 
+    // Stake
+
     let stakeEntryOriginalMintTokenAccountId = await getATAAddressSync({
-        mint: nft.mint,
+        mint: nftMint,
         owner: stakeEntryPda,
       })  
     
-    const originalNFTAccount = await getATAAddressSync({ mint: nft.mint, owner: wallet.publicKey });
+    const originalNFTAccount = await getATAAddressSync({
+        mint: nftMint,
+        owner: wallet.publicKey
+    });
 
     transaction.add(
-        program.instruction.stake(new BN(1), {
-            accounts: {
+        await program.methods.stake(new BN(1))
+            .accounts({
                 stakeEntry: stakeEntryPda,
                 stakeEntryOriginalMintTokenAccount: stakeEntryOriginalMintTokenAccountId,
-                originalMint: nft.mint,
+                originalMint: nftMint,
                 user: wallet.publicKey,
                 userOriginalMintTokenAccount: originalNFTAccount,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 systemProgram: SystemProgram.programId,
                 rent: SYSVAR_RENT_PUBKEY,
                 associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
-            },
-            signers: [wallet]
-        })
+            })
+            .signers([wallet])
+            .instruction()
     )
 
     // Claim Receipt
@@ -213,10 +191,10 @@ export const stakeNFTs = async(nft: any, wallet: any, multiplier: number) => {
     })
 
     transaction.add(
-        program.instruction.claimReceiptMint({
-            accounts: {
+        await program.methods.claimReceiptMint()
+            .accounts({
                 stakeEntry: stakeEntryPda,
-                originalMint: nft.mint,
+                originalMint: nftMint,
                 receiptMint: stakeMintKeypair.publicKey,
                 stakeEntryReceiptMintTokenAccount: stakeEntryStakeMintTokenAccountId, 
                 user: wallet.publicKey,
@@ -229,39 +207,51 @@ export const stakeNFTs = async(nft: any, wallet: any, multiplier: number) => {
                 associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
                 systemProgram: SystemProgram.programId,
                 rent: SYSVAR_RENT_PUBKEY
-            },
-            signers: [wallet],
-            remainingAccounts: remainingAccounts
-        })
+            })
+            .signers([wallet])
+            .remainingAccounts(remainingAccounts)
+            .instruction()
     )
 
-
-        // Send Tx
     try {
-        transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        const blockhash = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash.blockhash
         transaction.feePayer = wallet.publicKey;
         await wallet.signTransaction(transaction);
         transaction.partialSign(stakeMintKeypair)
         transaction.partialSign(poolAccount)
          
-        const stakeTx = await sendAndConfirmRawTransaction(connection, transaction.serialize())        
+        const stakeTx = await connection.sendRawTransaction(transaction.serialize());
+        
+        notify({type: 'loading', message: 'Claiming rewards', description: 'Claiming $WAVE', txid: stakeTx})
+
+        const confirmation = await connection.confirmTransaction({
+            signature: stakeTx,
+            blockhash: blockhash.blockhash,
+            lastValidBlockHeight: blockhash.lastValidBlockHeight,
+            }, 'finalized')
+
+        if (confirmation.value.err === null) {
+            notify({type: 'success', message: 'Staking Successful', description: "You've staked your OG", txid: stakeTx})
+        }
+
+        
         return stakeTx
     } catch (error) {
         console.log("ERR:" + error);
-        
     }
-    
+
 }
 
 export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
     const provider = new AnchorProvider(connection, wallet, {});
-    const program = new Program<StakePool>(idl, programID, provider);
-    const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);
-
     const saberProvider = SolanaProvider.init({
         connection: connection,
-        wallet: wallet,
-    });
+        wallet: wallet
+    })
+
+    const program = new Program<StakePool>(idl, programID, provider);
+    const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);
 
     let transaction = new Transaction();
 
@@ -282,7 +272,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         owner: stakeEntryPda
     });  
 
-    if (stakeEntryAccount.stakeMint && stakeEntryAccount.stakeMintClaimed) {
+    if (stakeEntryAccount.stakeMint && stakeEntryAccount.stakeMintClaimed) { // TODO: look here when updating contract
     
         const [tokenManagerAddress] = await findTokenManagerAddress(stakeEntryAccount.stakeMint)
 
@@ -335,20 +325,20 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         payer: wallet.publicKey,
       });
 
-      if (userRewardMintAta.instruction) {        
+    if (userRewardMintAta.instruction) {        
         transaction.add(
-          userRewardMintAta.instruction
+            userRewardMintAta.instruction
         )
-      }
+    }
 
-      const rewardDistributorTokenAccount = await getATAAddressSync({
-          mint: rewardMint,
-          owner: rewardDistributorPda
-      })
+    const rewardDistributorTokenAccount = await getATAAddressSync({
+        mint: rewardMint,
+        owner: rewardDistributorPda
+    })
 
-      transaction.add(
-        distributorProgram.instruction.claimRewards({
-          accounts: {
+    transaction.add(
+        await distributorProgram.methods.claimRewards()
+            .accounts({
             rewardEntry: rewardEntryPda,
             rewardDistributor: rewardDistributorPda,
             rewardDistributorTokenAccount: rewardDistributorTokenAccount,
@@ -360,22 +350,22 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
             user: wallet.publicKey,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId
-          },
-          signers: [wallet]
-        })
-      )
+            })
+            .signers([wallet])
+            .instruction()
+    )
 
     // Delete Reward Entry
 
     transaction.add(
-        distributorProgram.instruction.closeRewardEntry({
-            accounts: {
+        await distributorProgram.methods.closeRewardEntry()
+            .accounts( {
                 rewardDistributor: rewardDistributorPda,
                 rewardEntry: rewardEntryPda,
                 authority: poolAccount.publicKey
-            },
-            signers: [poolAccount, wallet]
-        })
+            })
+            .signers([poolAccount, wallet])
+            .instruction()
     )
 
     // Unstake
@@ -407,55 +397,70 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
      }]
 
     transaction.add(
-        program.instruction.unstake({
-            accounts: {
+        await program.methods.unstake()
+            .accounts({
                 stakeEntry: stakeEntryPda,
                 originalMint: nftMint,
                 stakeEntryOriginalMintTokenAccount: stakeEntryOriginalMintTokenAccountId.address,
                 user: wallet.publicKey,
                 userOriginalMintTokenAccount: originalNFTAccount.address,
                 tokenProgram: TOKEN_PROGRAM_ID
-            },
-            signers: [wallet],
-            remainingAccounts: remainingAccountsUnstake
-        })
-    );
+            })
+            .signers([wallet])
+            .remainingAccounts(remainingAccountsUnstake)
+            .instruction()
+    )
+
+    // Close Stake Entry
 
     transaction.add(
-        program.instruction.closeStakeEntry({
-            accounts: {
+        await program.methods.closeStakeEntry()
+            .accounts( {
                 stakePool: stakePoolPda,
                 stakeEntry: stakeEntryPda,
                 authority: poolAccount.publicKey
-            },
-            signers: [poolAccount]
-        })
+            })
+            .signers([poolAccount])
+            .instruction()
     )
 
     try {
-        transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        const blockhash = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash.blockhash;
         transaction.feePayer = wallet.publicKey;
         await wallet.signTransaction(transaction);
         transaction.partialSign(poolAccount)
          
-        const unstakeTx = await sendAndConfirmRawTransaction(connection, transaction.serialize());   
+        const unstakeTx = await connection.sendRawTransaction(transaction.serialize()); 
+        
+        notify({type: 'loading', message: 'Confirming Transaction', description: 'Unstaking NFT', txid: unstakeTx})
+
+        const confirmation = await connection.confirmTransaction({
+            signature: unstakeTx,
+            blockhash: blockhash.blockhash,
+            lastValidBlockHeight: blockhash.lastValidBlockHeight,
+        }, 'finalized')     
+
+        if (confirmation.value.err === null) {
+            notify({type: 'success', message: 'Successfully Claimed $WAVE', txid: unstakeTx})
+        } else {
+            notify({type: 'failure', message: 'Failed Claiming $WAVE', description: confirmation.value.err.toString(), txid: unstakeTx})
+        }
 
         return unstakeTx     
 
         } catch (error) {
         console.log("Err:" + error);
-        
     }
 }
 
 export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
     const provider = new AnchorProvider(connection, wallet, {});
-    const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);
-
     const saberProvider = SolanaProvider.init({
         connection: connection,
-        wallet: wallet,
-    });
+        wallet: wallet
+    })
+    const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);
 
     let transaction = new Transaction();
 
@@ -471,23 +476,25 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
 
     const rewardMint = (await distributorProgram.account.rewardDistributor.fetch(rewardDistributorPda)).rewardMint;
 
-    const userRewardMintAta = await getOrCreateATA({
+    const userRewardMintTokenAccount = await getOrCreateATA({
         provider: saberProvider,
         mint: rewardMint,
         owner: wallet.publicKey,
-        payer: wallet.publicKey,
-      });
+        payer: wallet.publicKey
+    });
 
-    if (userRewardMintAta.instruction) {
+    if (userRewardMintTokenAccount.instruction) {
+        console.log("userRewardMintTokenAccount is being initialized");
+
         transaction.add(
-          userRewardMintAta.instruction
+            userRewardMintTokenAccount.instruction
         )
     }
 
     const rewardDistributorTokenAccount = await getATAAddressSync({
         mint: rewardMint,
         owner: rewardDistributorPda
-    })
+    })        
 
     // Loop transactions
 
@@ -495,7 +502,7 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         const[stakeEntryPda] = await PublicKey.findProgramAddress(
             [Buffer.from("stake-entry"), stakePoolPda.toBuffer(), nftMint.toBuffer(), wallet.publicKey.toBuffer()],
             programID
-        );
+        );        
     
         const [rewardEntryPda] = await PublicKey.findProgramAddress(
             [utils.bytes.utf8.encode("reward-entry"), rewardDistributorPda.toBuffer(), stakeEntryPda.toBuffer()],
@@ -503,32 +510,48 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         );
 
         transaction.add(
-            distributorProgram.instruction.claimRewards({
-              accounts: {
-                rewardEntry: rewardEntryPda,
-                rewardDistributor: rewardDistributorPda,
-                rewardDistributorTokenAccount: rewardDistributorTokenAccount,
-                stakeEntry: stakeEntryPda,
-                stakePool: stakePoolPda,
-                rewardMint: rewardMint,
-                userRewardMintTokenAccount: userRewardMintAta.address,
-                rewardManager: poolAccount.publicKey,
-                user: wallet.publicKey,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                systemProgram: SystemProgram.programId
-              },
-              signers: [wallet]
-            })
-        );
+            await distributorProgram.methods.claimRewards()
+                .accounts({
+                    rewardEntry: rewardEntryPda,
+                    rewardDistributor: rewardDistributorPda,
+                    rewardDistributorTokenAccount: rewardDistributorTokenAccount,
+                    stakeEntry: stakeEntryPda,
+                    stakePool: stakePoolPda,
+                    rewardMint: rewardMint,
+                    userRewardMintTokenAccount: userRewardMintTokenAccount.address,
+                    rewardManager: poolAccount.publicKey,
+                    user: wallet.publicKey,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    systemProgram: SystemProgram.programId
+                })
+                .signers([wallet])
+                .instruction()
+        )
     })
 
-
     try {
-        transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        const blockhash = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash.blockhash
         transaction.feePayer = wallet.publicKey;
         await wallet.signTransaction(transaction);
+
+        notify({type: 'loading', message: 'Claiming rewards', description: 'Claiming $WAVE'})
          
-        const claimTx = await sendAndConfirmRawTransaction(connection, transaction.serialize());  
+        const claimTx = await connection.sendRawTransaction(transaction.serialize());
+
+        notify({type: 'loading', message: 'Confirming Transaction', description: 'Claiming $WAVE', txid: claimTx})
+
+        const confirmation = await connection.confirmTransaction({
+            signature: claimTx,
+            blockhash: blockhash.blockhash,
+            lastValidBlockHeight: blockhash.lastValidBlockHeight,
+        }, 'finalized')     
+
+        if (confirmation.value.err === null) {
+            notify({type: 'success', message: 'Successfully Claimed $WAVE', txid: claimTx})
+        } else {
+            notify({type: 'failure', message: 'Failed Claiming $WAVE', description: confirmation.value.err.toString(), txid: claimTx})
+        }
                         
         return claimTx     
 
