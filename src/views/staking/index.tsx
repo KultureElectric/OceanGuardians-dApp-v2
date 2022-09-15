@@ -1,5 +1,5 @@
-import { useWallet, useConnection } from "@solana/wallet-adapter-react"
-import { FC } from "react";
+import { useWallet } from "@solana/wallet-adapter-react"
+import { FC, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandPointUp } from "@fortawesome/free-solid-svg-icons";
@@ -14,10 +14,11 @@ import config from "../../../public/traits/config.json"
 import { claimRewards, stakeNFTs, unstakeNFTs } from "utils/stakingInstructions";
 
 export const StakingView: FC = ({ }) => {
-    const connection = useConnection();
+  const [latestTx, setLatestTx] = useState('')
+
     const wallet = useWallet();
-    const staking = useStaking();
-    const walletNFTs = useWalletNFTs(true); // true in order to skip staked NFTs
+    const staking = useStaking(latestTx);
+    const walletNFTs = useWalletNFTs(true, latestTx); // true in order to skip staked NFTs
 
     const claimStakingRewards = async() => {
       let nftIds = Array<PublicKey>();
@@ -26,15 +27,18 @@ export const StakingView: FC = ({ }) => {
         nftIds.push(entry.parsed.originalMint)
       })
 
-      const res = await claimRewards(nftIds, wallet);      
+      const res = await claimRewards(nftIds, wallet);
+      res && setLatestTx(res)      
     }
 
     const stake = async(nftMint: PublicKey, multiplier: number) => {
       const res = await stakeNFTs(nftMint, wallet, multiplier)
+      res && setLatestTx(res)      
     }
 
     const unstake = async(nftMint: PublicKey) => {
       const res = await unstakeNFTs(nftMint, wallet)
+      res && setLatestTx(res);
     }
 
     return (
@@ -135,7 +139,7 @@ export const StakingView: FC = ({ }) => {
                                 _.forEach(Object.keys(config), (key) => {
                                   multiplier *= _.find(config[key].traits, o => {
                                     return o.name === nft.dynamicLayers[key]
-                                  }).multiplier;
+                                  })?.multiplier;
                                 })
                                 
                                 return (                                  

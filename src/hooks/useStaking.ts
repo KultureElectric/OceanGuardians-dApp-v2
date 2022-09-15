@@ -17,7 +17,7 @@ const distributorIdl: OgRewardDistributor = require("../../public/og_reward_dist
 
 const baseRate = 60;
 
-const useStaking = () => {
+const useStaking = (tx: string) => {
   const { connection } = useConnection();  
   const wallet = useWallet();
 
@@ -116,7 +116,7 @@ const useStaking = () => {
       console.log("Fetching Staking");
       fetchStaking()
     }
-  }, [wallet.publicKey]);
+  }, [wallet.publicKey, tx]);
 
   return {userStakedEntries, totalClaimableRewards, totalDailyAccrualRate, loading};
 }

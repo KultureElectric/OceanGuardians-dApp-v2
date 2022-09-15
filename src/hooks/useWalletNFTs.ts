@@ -30,7 +30,7 @@ export type NFT = {
   }
 }
 
-const useWalletNFTs = (single?: boolean) => {
+const useWalletNFTs = (single?: boolean, latestTx?: string) => {
   const { connection } = useConnection();  
   const { publicKey } = useWallet();
   const [walletNFTs, setWalletNFTs] = useState<Array<NFT>>([])
@@ -54,7 +54,7 @@ const useWalletNFTs = (single?: boolean) => {
       console.log("Fetching NFTs");
       fetchNFTs()
     }
-  }, [publicKey])
+  }, [publicKey, latestTx])
 
 
 

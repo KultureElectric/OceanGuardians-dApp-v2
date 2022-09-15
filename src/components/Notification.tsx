@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react'
-import {
-  CheckCircleIcon,
-  InformationCircleIcon,
-  XCircleIcon,
-} from '@heroicons/react/outline'
+import { useEffect } from 'react'
 import { XIcon } from '@heroicons/react/solid'
 import useNotificationStore from '../stores/useNotificationStore'
-import { useConnection } from '@solana/wallet-adapter-react';
-import { getExplorerUrl } from '../utils/explorer'
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faCircleXmark, faCircleCheck, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
 const NotificationList = () => {
   const { notifications, set: setNotificationStore } = useNotificationStore(
@@ -15,6 +11,31 @@ const NotificationList = () => {
   )
 
   const reversedNotifications = [...notifications].reverse()
+  
+  if (reversedNotifications[0]) {
+    return (
+      <div className={`z-20 fixed inset-0 flex items-end px-4 py-6 pointer-events-none sm:p-6`}>
+        <div className={`flex flex-col w-full`}>
+          <Notification
+            key={`${reversedNotifications[0].message}`}
+            type={reversedNotifications[0].type}
+            message={reversedNotifications[0].message}
+            description={reversedNotifications[0].description}
+            txid={reversedNotifications[0].txid}
+            onHide={() => {
+              setNotificationStore((state: any) => {
+                const reversedIndex = reversedNotifications.length - 1;
+                state.notifications = [
+                  ...notifications.slice(0, reversedIndex),
+                  ...notifications.slice(reversedIndex + 1),
+                ];
+              });
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -45,17 +66,11 @@ const NotificationList = () => {
 }
 
 const Notification = ({ type, message, description, txid, onHide }) => {
-  const { connection } = useConnection();
-
-  // TODO: we dont have access to the network or endpoint here.. 
-  // getExplorerUrl(connection., txid, 'tx')
-  // Either a provider, context, and or wallet adapter related pro/contx need updated
-
 
   useEffect(() => {
     const id = setTimeout(() => {
       onHide()
-    }, 8000);
+    }, 10000);
 
     return () => {
       clearInterval(id);
@@ -64,18 +79,17 @@ const Notification = ({ type, message, description, txid, onHide }) => {
 
   return (
     <div
-      className={`max-w-sm w-full bg-header rounded mt-2 pointer-events-auto p-2 mx-4 mb-12 overflow-hidden`}
+      className={`max-w-sm w-full bg-header rounded mt-2 pointer-events-auto p-2 mx-4 mb-4 overflow-hidden`}
     >
       <div className={`p-4`}>
         <div className={`flex items-center`}>
           <div className={`flex-shrink-0`}>
             {type === 'success' ? (
-              <CheckCircleIcon className={`h-8 w-8 mr-1 text-green`} />
+              <FontAwesomeIcon icon={faCircleCheck}/>
             ) : null}
-            {type === 'info' && <InformationCircleIcon className={`h-8 w-8 mr-1 text-red`} />}
-            {type === 'error' && (
-              <XCircleIcon className={`h-8 w-8 mr-1`} />
-            )}
+            {type === 'info' && <FontAwesomeIcon icon={faCircleInfo}/>}
+            {type === 'error' && <FontAwesomeIcon icon={faCircleXmark}/>}
+            {type === 'loading' && <FontAwesomeIcon className='animate-spin' icon={faSpinner}/>}
           </div>
           <div className={`ml-2 w-0 flex-1`}>
             <div className={`font-bold text-fgd-1`}>{message}</div>
@@ -83,16 +97,16 @@ const Notification = ({ type, message, description, txid, onHide }) => {
               <p className={`mt-0.5 text-sm text-fgd-2`}>{description}</p>
             ) : null}
             {txid ? (
-              <div className="flex flex-row">
+              <div className="flex flex-row mt-2 text-xs">
          
                 <a
-                  href={'https://explorer.solana.com/tx/' + txid + `?cluster=${process.env.NEXT_PUBLIC_CLUSTER}`}
+                  href={'https://solscan.io/tx/' + txid + `?cluster=${process.env.NEXT_PUBLIC_CLUSTER}`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex flex-row link link-accent"
                 >
-                  <svg className="flex-shrink-0 h-4 ml-2 mt-0.5 text-primary-light w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" ><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                  <div className="flex mx-4">{txid.slice(0, 8)}...
+                  <svg className="flex-shrink-0 h-4 text-primary-light w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" ><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                  <div className="flex mx-2">{txid.slice(0, 8)}...
                     {txid.slice(txid.length - 8)}
                   </div>
                 </a>

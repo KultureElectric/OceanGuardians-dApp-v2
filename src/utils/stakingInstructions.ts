@@ -39,6 +39,8 @@ const connection = new Connection(process.env.NEXT_PUBLIC_ENDPOINT, "confirmed")
 // stake function
 
 export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: number) => {
+    notify({type: 'loading', message: 'Staking NFT', description: 'Loading...'})
+
     const stakeMintKeypair = Keypair.generate();
 
     const provider = new AnchorProvider(connection, wallet, {});
@@ -223,7 +225,7 @@ export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: numb
          
         const stakeTx = await connection.sendRawTransaction(transaction.serialize());
         
-        notify({type: 'loading', message: 'Claiming rewards', description: 'Claiming $WAVE', txid: stakeTx})
+        notify({type: 'loading', message: 'Staking NFT', description: 'Confirming Transaction', txid: stakeTx})
 
         const confirmation = await connection.confirmTransaction({
             signature: stakeTx,
@@ -232,18 +234,23 @@ export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: numb
             }, 'finalized')
 
         if (confirmation.value.err === null) {
-            notify({type: 'success', message: 'Staking Successful', description: "You've staked your OG", txid: stakeTx})
+            notify({type: 'success', message: 'Staking NFT', description: 'Success', txid: stakeTx})
+        } else {
+            notify({type: 'error', message: 'Staking NFT', description: confirmation.value.err.toString(), txid: stakeTx})
         }
 
         
         return stakeTx
     } catch (error) {
         console.log("ERR:" + error);
+        // notify({type: 'error', message: 'Staking NFT', description: error})
     }
 
 }
 
 export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
+    notify({type: 'loading', message: 'Unstaking NFT', description: 'Loading...'})
+
     const provider = new AnchorProvider(connection, wallet, {});
     const saberProvider: Provider = SolanaProvider.init({
         connection: connection,
@@ -433,7 +440,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
          
         const unstakeTx = await connection.sendRawTransaction(transaction.serialize()); 
         
-        notify({type: 'loading', message: 'Confirming Transaction', description: 'Unstaking NFT', txid: unstakeTx})
+        notify({type: 'loading', message: 'Unstaking NFT', description: 'Confirming Transaction', txid: unstakeTx})
 
         const confirmation = await connection.confirmTransaction({
             signature: unstakeTx,
@@ -442,19 +449,22 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         }, 'finalized')     
 
         if (confirmation.value.err === null) {
-            notify({type: 'success', message: 'Successfully Claimed $WAVE', txid: unstakeTx})
+            notify({type: 'success', message: 'Unstaking NFT', description: 'Success', txid: unstakeTx})
         } else {
-            notify({type: 'failure', message: 'Failed Claiming $WAVE', description: confirmation.value.err.toString(), txid: unstakeTx})
+            notify({type: 'error', message: 'Unstaking NFT', description: confirmation.value.err.toString(), txid: unstakeTx})
         }
 
         return unstakeTx     
 
         } catch (error) {
         console.log("Err:" + error);
+        // notify({type: 'error', message: 'Unstaking NFT', description: error})
     }
 }
 
 export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
+    notify({type: 'loading', message: 'Claiming rewards', description: 'Loading...'})
+
     const provider = new AnchorProvider(connection, wallet, {});
     const saberProvider: Provider = SolanaProvider.init({
         connection: connection,
@@ -534,12 +544,10 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         transaction.recentBlockhash = blockhash.blockhash
         transaction.feePayer = wallet.publicKey;
         await wallet.signTransaction(transaction);
-
-        notify({type: 'loading', message: 'Claiming rewards', description: 'Claiming $WAVE'})
          
         const claimTx = await connection.sendRawTransaction(transaction.serialize());
 
-        notify({type: 'loading', message: 'Confirming Transaction', description: 'Claiming $WAVE', txid: claimTx})
+        notify({type: 'loading', message: 'Claiming rewards', description: 'Confirming Transaction', txid: claimTx})
 
         const confirmation = await connection.confirmTransaction({
             signature: claimTx,
@@ -548,15 +556,15 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         }, 'finalized')     
 
         if (confirmation.value.err === null) {
-            notify({type: 'success', message: 'Successfully Claimed $WAVE', txid: claimTx})
+            notify({type: 'success', message: 'Claiming rewards', description: 'Success', txid: claimTx})
         } else {
-            notify({type: 'failure', message: 'Failed Claiming $WAVE', description: confirmation.value.err.toString(), txid: claimTx})
+            notify({type: 'error', message: 'Claiming rewards', description: confirmation.value.err.toString(), txid: claimTx})
         }
                         
         return claimTx     
 
         } catch (error) {
         console.log("Err:" + error);
-        
+        // notify({type: 'error', message: 'Claiming Rewards', description: error})
     }
 }
