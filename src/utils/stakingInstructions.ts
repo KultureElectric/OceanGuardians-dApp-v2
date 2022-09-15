@@ -463,8 +463,6 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
 }
 
 export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
-    notify({type: 'loading', message: 'Claiming rewards', description: 'Loading...'})
-
     const provider = new AnchorProvider(connection, wallet, {});
     const saberProvider: Provider = SolanaProvider.init({
         connection: connection,

@@ -2,7 +2,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { FC, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandPointUp } from "@fortawesome/free-solid-svg-icons";
+import { faHandPointUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import _ from 'lodash';
 import { PublicKey } from "@solana/web3.js";
 import useStaking from "hooks/useStaking";
@@ -14,13 +14,15 @@ import config from "../../../public/traits/config.json"
 import { claimRewards, stakeNFTs, unstakeNFTs } from "utils/stakingInstructions";
 
 export const StakingView: FC = ({ }) => {
-  const [latestTx, setLatestTx] = useState('')
+    const [latestTx, setLatestTx] = useState('');
+    const [claimLoading, setClaimLoading] = useState(false);
 
     const wallet = useWallet();
     const staking = useStaking(latestTx);
     const walletNFTs = useWalletNFTs(true, latestTx); // true in order to skip staked NFTs
 
     const claimStakingRewards = async() => {
+      setClaimLoading(true)
       let nftIds = Array<PublicKey>();
 
       _.forEach(staking.userStakedEntries, entry => {        
@@ -28,6 +30,7 @@ export const StakingView: FC = ({ }) => {
       })
 
       const res = await claimRewards(nftIds, wallet);
+      setClaimLoading(false)
       res && setLatestTx(res)      
     }
 
@@ -102,11 +105,11 @@ export const StakingView: FC = ({ }) => {
                                 <p className="text-right">Claimable Rewards</p>
                                 <p className="text-xl font-bold text-blue text-right">{staking.totalClaimableRewards.toFixed(2)}</p>
                                 </div>
-                                <button onClick={claimStakingRewards} className="hidden md:block w-40 btn btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
+                                <button onClick={claimStakingRewards} className={"hidden md:block w-40 btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95" + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
 
                               </div>
                             </div>
-                            <button onClick={claimStakingRewards} className="md:hidden btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95">Claim all</button>
+                            <button onClick={claimStakingRewards} className={"md:hidden btn btn-block bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95" + + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
                             <div className="space-y-2.5 mt-4">
                               {_.map(staking.userStakedEntries, (entry) => {
                                 console.log(entry);
