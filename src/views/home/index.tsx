@@ -98,7 +98,7 @@ export const HomeView: FC = ({ }) => {
         </h4>
         {/* NFT List Section */}
         {wallet.connected ? (   
-          <div className="pt-4 md:flex md:flex-col md:items-center md:w-mdscreencustom lg:w-auto">
+          <div className="pt-4 md:flex md:flex-col md:items-center md:w-mdscreencustom lg:w-auto lg:max-w-screen-lg">
             {!walletNFTs.loading ? (
               <>
               {walletNFTs.walletNFTs.length === 0 ? (
