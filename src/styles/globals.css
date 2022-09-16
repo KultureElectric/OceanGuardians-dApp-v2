@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --toastify-color-success: #4D75C4;
+  --toastify-color-success: #4D75C4 !important;
 }
 
 html,
