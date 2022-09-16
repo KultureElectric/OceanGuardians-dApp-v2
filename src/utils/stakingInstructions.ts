@@ -39,8 +39,6 @@ const connection = new Connection(process.env.NEXT_PUBLIC_ENDPOINT, "confirmed")
 // stake function
 
 export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: number) => {
-    notify({type: 'loading', message: 'Staking NFT', description: 'Loading...'})
-
     const stakeMintKeypair = Keypair.generate();
 
     const provider = new AnchorProvider(connection, wallet, {});
@@ -249,8 +247,6 @@ export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: numb
 }
 
 export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
-    notify({type: 'loading', message: 'Unstaking NFT', description: 'Loading...'})
-
     const provider = new AnchorProvider(connection, wallet, {});
     const saberProvider: Provider = SolanaProvider.init({
         connection: connection,

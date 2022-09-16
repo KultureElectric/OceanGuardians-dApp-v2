@@ -9,9 +9,7 @@ import useStaking from "hooks/useStaking";
 import useWalletNFTs from "hooks/useWalletNFTs";
 
 import ListItemStaking from "components/ListItemStaking";
-
-import config from "../../../public/traits/config.json"
-import { claimRewards, stakeNFTs, unstakeNFTs } from "utils/stakingInstructions";
+import { claimRewards } from "utils/stakingInstructions";
 
 export const StakingView: FC = ({ }) => {
     const [latestTx, setLatestTx] = useState('');
@@ -32,16 +30,6 @@ export const StakingView: FC = ({ }) => {
       const res = await claimRewards(nftIds, wallet);
       setClaimLoading(false)
       res && setLatestTx(res)      
-    }
-
-    const stake = async(nftMint: PublicKey, multiplier: number) => {
-      const res = await stakeNFTs(nftMint, wallet, multiplier)
-      res && setLatestTx(res)      
-    }
-
-    const unstake = async(nftMint: PublicKey) => {
-      const res = await unstakeNFTs(nftMint, wallet)
-      res && setLatestTx(res);
     }
 
     return (
@@ -105,28 +93,15 @@ export const StakingView: FC = ({ }) => {
                                 <p className="text-right">Claimable Rewards</p>
                                 <p className="text-xl font-bold text-blue text-right">{staking.totalClaimableRewards.toFixed(2)}</p>
                                 </div>
-                                <button onClick={claimStakingRewards} className={"hidden md:block w-40 btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95" + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
+                                <button onClick={claimStakingRewards} className={"hidden md:block w-40 btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95 " + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
 
                               </div>
                             </div>
-                            <button onClick={claimStakingRewards} className={"md:hidden btn btn-block bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95" + + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
+                            <button onClick={claimStakingRewards} className={"md:hidden btn btn-block bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95 " + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
                             <div className="space-y-2.5 mt-4">
                               {_.map(staking.userStakedEntries, (entry) => {
-                                console.log(entry);
-                                return (                                  
-                                  <div className="bg-second mb-1 rounded flex" key={entry.nft.externalMetadata.name}>
-                                    <ListItemStaking nft={entry.nft}/>
-                                    <div className="w-full flex flex-col justify-between px-2 py-1">
-                                      <p className="font-bold md:text-xl">{entry.nft.externalMetadata.name}</p>
-                                      <div className="flex items-end justify-between">
-                                        <div className="text-xs md:text-base">
-                                          <p>Claimable Rewards<br/><span className="text-base md:text-lg text-blue font-bold">{entry.claimableRewards.toFixed(2)}</span></p>
-                                          <p>Multiplier<br/><span className="text-base md:text-lg text-blue font-bold">{entry.rewardEntry.multiplier.toNumber() / 100}</span></p>
-                                        </div>
-                                        <button onClick={() => unstake(entry.parsed.originalMint)} className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Unstake</button>
-                                      </div>
-                                    </div>
-                                  </div>
+                                return (     
+                                  <ListItemStaking type="staked" input={entry} setLatestTx={(tx: string) => setLatestTx(tx)} />                             
                                 )
                               })}
                             </div>
@@ -137,26 +112,7 @@ export const StakingView: FC = ({ }) => {
                             <p className="font-bold text-lg md:text-2xl mb-4 md:mb-6 mt-2">{`Unstaked NFTs (${walletNFTs.walletNFTs.length})`}</p> 
                             <div className="space-y-2.5 mt-2">
                               {_.map(walletNFTs.walletNFTs, (nft) => {
-                                let multiplier = 1;
-
-                                _.forEach(Object.keys(config), (key) => {
-                                  multiplier *= _.find(config[key].traits, o => {
-                                    return o.name === nft.dynamicLayers[key]
-                                  })?.multiplier;
-                                })
-                                
-                                return (                                  
-                                  <div className="bg-second rounded flex" key={nft.externalMetadata.name}>
-                                    <ListItemStaking nft={nft}/>
-                                    <div className="w-full flex flex-col justify-between px-2 py-1">
-                                      <p className="font-bold mt-2 md:text-xl">{nft.externalMetadata.name}</p>
-                                      <div className="flex items-center justify-between">
-                                        <p className="text-xs md:text-base">Multiplier<br/><span className="text-blue font-bold text-base md:text-lg">{multiplier.toFixed(2)}</span></p>
-                                        <button onClick={() => stake(nft.mint, multiplier)} className="my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover">Stake</button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )
+                                <ListItemStaking type='unstaked' input={nft} setLatestTx={(tx: string) => setLatestTx(tx)} />
                               })}
                             </div>
                           </div>
