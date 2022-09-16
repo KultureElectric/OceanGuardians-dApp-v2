@@ -50,12 +50,12 @@ const ListItemStaking = ({input, type, setLatestTx}) => {
                             <p>Claimable Rewards<br/><span className="text-base md:text-lg text-blue font-bold">{input.claimableRewards.toFixed(2)}</span></p>
                             <p>Multiplier<br/><span className="text-base md:text-lg text-blue font-bold">{input.rewardEntry.multiplier.toNumber() / 100}</span></p>
                         </div>
-                        <button onClick={() => unstake(input.parsed.originalMint)} className={"my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover " + (loading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!loading && ' hidden')} icon={faSpinner}/>Unstake</button>
+                        <button onClick={() => unstake(input.parsed.originalMint)} className={"my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover " + (loading && " loading")}>Unstake</button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between">
                         <p className="text-xs md:text-base">Multiplier<br/><span className="text-blue font-bold text-base md:text-lg">{multiplier.toFixed(2)}</span></p>
-                        <button onClick={() => stake(nft.mint, multiplier)} className={"my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover " + (loading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!loading && ' hidden')} icon={faSpinner}/>Stake</button>
+                        <button onClick={() => stake(nft.mint, multiplier)} className={"my-2 btn btn-sm md:btn-md bg-button hover:bg-buttonhover " + (loading && " loading")}>Stake</button>
                     </div>
                 )}
             </div>
