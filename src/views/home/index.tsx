@@ -24,7 +24,6 @@ import { swapTrait } from 'utils/swapTrait';
 // Store
 import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
 import useUserTokenBalanceStore from 'stores/useUserTokenBalanceStore';
-import { notify } from 'utils/notifications';
 
 // Hooks
 import useWalletNFTs from 'hooks/useWalletNFTs';
@@ -221,7 +220,7 @@ export const HomeView: FC = ({ }) => {
                                   </>
                                 )}
                               </div>
-                              <button type='submit' className={"btn btn-block btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] hover:brightness-95 my-2 " + (swapLoading && " loading")} onClick={handleSubmit}>SWAP</button>
+                              <button type='submit' className={"btn btn-block bg-gradient-to-tr from-[#9945FF] to-[#14F195] hover:brightness-95 my-2 " + (swapLoading && " loading")} onClick={handleSubmit}>SWAP</button>
                               <p className="text-center text-xs text-inherit stat-title">Powered by Dynamic Labs</p>
                             </form>
                         </div>
@@ -234,7 +233,7 @@ export const HomeView: FC = ({ }) => {
                         <div className="flex justify-between">
                           <p className="font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">SUCCESS!</p>
                           <div className="space-x-1">
-                            <a target="_blank" className="btn btn-info btn-outline btn-xs" href={'https://solscan.io/tx/' + receipt.txHash + '?cluster=mainnet'}>Solscan</a>
+                            <a target="_blank" className="btn btn-info btn-outline btn-xs" href={'https://solana.fm/tx/' + receipt.txHash}>SolanaFM</a>
                             <a target="_blank" className="btn btn-info btn-outline btn-xs" href={"https://explorer.aleph.im/address/SOL/2BMddnLuE54MZdvbjGoy8RiTdYaZ1rYeVFn1aTcsybvR/message/AGGREGATE/" + receipt.alephHash}>Aleph</a>
                           </div>
                         </div>

@@ -5,7 +5,10 @@ import { aggregate } from "aleph-sdk-ts";
 import { ItemType } from "aleph-sdk-ts/messages/message";
 import { Transaction, TransactionInstruction, PublicKey, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
+
 import { waveMint } from "stores/useUserTokenBalanceStore";
+import { toast } from "react-toastify";
+import Toast from "components/Toast";
 
 export const swapTrait = async(previewTrait: string, traitReference: string, activeNFT: NFT, wallet: WalletContextState, connection: Connection, price: number) => {
     const account = solana.ImportAccountFromPrivateKey(Uint8Array.from(JSON.parse(process.env.NEXT_PUBLIC_ALEPH_KP || '')));
@@ -51,13 +54,18 @@ export const swapTrait = async(previewTrait: string, traitReference: string, act
         await wallet.signTransaction(tx)
         const txHash = await connection.sendRawTransaction(tx.serialize());
 
+        const toastId = toast.loading(Toast("Confirming Tx...", txHash))
+
         const confirmation = await connection.confirmTransaction({
-            signature: txHash,
-            blockhash: blockhash.blockhash,
-            lastValidBlockHeight: blockhash.lastValidBlockHeight
-        })        
+                signature: txHash,
+                blockhash: blockhash.blockhash,
+                lastValidBlockHeight: blockhash.lastValidBlockHeight,
+        }, 'confirmed')
 
         if (confirmation.value.err === null) {
+
+            toast.update(toastId, { render: "Swapping Trait"})
+
             const res = await aggregate.Publish({
                 account: account,
                 key,
@@ -66,12 +74,20 @@ export const swapTrait = async(previewTrait: string, traitReference: string, act
                 storageEngine: ItemType.storage,
                 inlineRequested: true,
                 APIServer: "https://api2.aleph.im",
-            });    
+            })
+
+            if (res.item_hash) {
+                toast.update(toastId, {render: "Success", type: "success", autoClose: 5000, isLoading: false})
+            } else {
+                toast.update(toastId, {render: "Error Swapping Trait. Please reach out in the Discord to receive personalized support", type: "error", autoClose: 5000, isLoading: false})
+            }     
+
             const alephHash = res.item_hash;
 
             return {alephHash, txHash, traitReference, from, to};
+        } else {
+            toast.update(toastId, {render: `Error. ${confirmation.value.err.toString()}`, type: "error", autoClose: 5000, isLoading: false})
         }
-
     } catch (error) {
         console.log(error);
     }

@@ -2,6 +2,7 @@ import { AnchorProvider, Program, BN, utils } from "@project-serum/anchor";
 import { PublicKey, Keypair, Connection, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY, sendAndConfirmRawTransaction } from "@solana/web3.js";
 import { StakePool } from "../../public/stake_pool";
 import { OgRewardDistributor } from "../../public/og_reward_distributor";
+import Toast from "components/Toast";
 
 import * as metaplex from "@metaplex-foundation/mpl-token-metadata";
 import {
@@ -25,7 +26,7 @@ import {
 import { tokenManager } from "@cardinal/token-manager/dist/cjs/programs";
 import _ from "lodash";
 
-import { notify } from "./notifications";
+import { toast } from "react-toastify"
 
 const idl: StakePool = require("../../public/stake_pool.json");
 const distributorIdl: OgRewardDistributor = require("../../public/og_reward_distributor.json");
@@ -222,26 +223,24 @@ export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: numb
         transaction.partialSign(poolAccount)
          
         const stakeTx = await connection.sendRawTransaction(transaction.serialize());
-        
-        notify({type: 'loading', message: 'Staking NFT', description: 'Confirming Transaction', txid: stakeTx})
 
+        const toastId = toast.loading(Toast("Confirming Tx...", stakeTx))
+        
         const confirmation = await connection.confirmTransaction({
-            signature: stakeTx,
-            blockhash: blockhash.blockhash,
-            lastValidBlockHeight: blockhash.lastValidBlockHeight,
-            }, 'finalized')
+                signature: stakeTx,
+                blockhash: blockhash.blockhash,
+                lastValidBlockHeight: blockhash.lastValidBlockHeight,
+        }, 'finalized');
 
         if (confirmation.value.err === null) {
-            notify({type: 'success', message: 'Staking NFT', description: 'Success', txid: stakeTx})
+            toast.update(toastId, {render: Toast("Success", stakeTx), type: "success", autoClose: 5000, isLoading: false})
         } else {
-            notify({type: 'error', message: 'Staking NFT', description: confirmation.value.err.toString(), txid: stakeTx})
+            toast.update(toastId, {render: Toast(`Error. ${confirmation.value.err.toString()}`, stakeTx), type: "error", autoClose: 5000, isLoading: false})
         }
-
-        
+ 
         return stakeTx
     } catch (error) {
         console.log("ERR:" + error);
-        // notify({type: 'error', message: 'Staking NFT', description: error})
     }
 
 }
@@ -436,25 +435,24 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
          
         const unstakeTx = await connection.sendRawTransaction(transaction.serialize()); 
         
-        notify({type: 'loading', message: 'Unstaking NFT', description: 'Confirming Transaction', txid: unstakeTx})
-
+        const toastId = toast.loading(Toast("Confirming Tx...", unstakeTx))
+        
         const confirmation = await connection.confirmTransaction({
-            signature: unstakeTx,
-            blockhash: blockhash.blockhash,
-            lastValidBlockHeight: blockhash.lastValidBlockHeight,
-        }, 'finalized')     
+                signature: unstakeTx,
+                blockhash: blockhash.blockhash,
+                lastValidBlockHeight: blockhash.lastValidBlockHeight,
+        }, 'finalized');
 
         if (confirmation.value.err === null) {
-            notify({type: 'success', message: 'Unstaking NFT', description: 'Success', txid: unstakeTx})
+            toast.update(toastId, {render: Toast("Success", unstakeTx), type: "success", autoClose: 5000, isLoading: false})
         } else {
-            notify({type: 'error', message: 'Unstaking NFT', description: confirmation.value.err.toString(), txid: unstakeTx})
+            toast.update(toastId, {render: Toast(`Error. ${confirmation.value.err.toString()}`, unstakeTx), type: "error", autoClose: 5000, isLoading: false})
         }
 
         return unstakeTx     
 
         } catch (error) {
         console.log("Err:" + error);
-        // notify({type: 'error', message: 'Unstaking NFT', description: error})
     }
 }
 
@@ -541,24 +539,23 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
          
         const claimTx = await connection.sendRawTransaction(transaction.serialize());
 
-        notify({type: 'loading', message: 'Claiming rewards', description: 'Confirming Transaction', txid: claimTx})
+        const toastId = toast.loading(Toast("Confirming Tx...", claimTx))
 
         const confirmation = await connection.confirmTransaction({
-            signature: claimTx,
-            blockhash: blockhash.blockhash,
-            lastValidBlockHeight: blockhash.lastValidBlockHeight,
-        }, 'finalized')     
+                signature: claimTx,
+                blockhash: blockhash.blockhash,
+                lastValidBlockHeight: blockhash.lastValidBlockHeight,
+        }, 'finalized');
 
         if (confirmation.value.err === null) {
-            notify({type: 'success', message: 'Claiming rewards', description: 'Success', txid: claimTx})
+            toast.update(toastId, {render: Toast("Success", claimTx), type: "success", autoClose: 5000, isLoading: false})
         } else {
-            notify({type: 'error', message: 'Claiming rewards', description: confirmation.value.err.toString(), txid: claimTx})
+            toast.update(toastId, {render: Toast(`Error. ${confirmation.value.err.toString()}`, claimTx), type: "error", autoClose: 5000, isLoading: false})
         }
                         
         return claimTx     
 
         } catch (error) {
         console.log("Err:" + error);
-        // notify({type: 'error', message: 'Claiming Rewards', description: error})
     }
 }

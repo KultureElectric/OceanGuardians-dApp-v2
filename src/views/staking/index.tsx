@@ -2,7 +2,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { FC, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandPointUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faHandPointUp } from "@fortawesome/free-solid-svg-icons";
 import _ from 'lodash';
 import { PublicKey } from "@solana/web3.js";
 import useStaking from "hooks/useStaking";
@@ -93,15 +93,15 @@ export const StakingView: FC = ({ }) => {
                                 <p className="text-right">Claimable Rewards</p>
                                 <p className="text-xl font-bold text-blue text-right">{staking.totalClaimableRewards.toFixed(2)}</p>
                                 </div>
-                                <button onClick={claimStakingRewards} className={"hidden md:block w-40 btn bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95 " + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
+                                <button onClick={claimStakingRewards} className={"hidden md:inline-flex w-40 btn btn-block bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95 " + (claimLoading && " loading")}>Claim all</button>
 
                               </div>
                             </div>
-                            <button onClick={claimStakingRewards} className={"md:hidden btn btn-block bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95 " + (claimLoading && " pointer-events-none")}><FontAwesomeIcon className={'animate-spin mr-2 invisible' + (!claimLoading && ' hidden')} icon={faSpinner}/>Claim all</button>
+                            <button onClick={claimStakingRewards} className={"md:hidden btn btn-block bg-gradient-to-tr from-[#9945FF] to-[#14F195] my-2 hover:brightness-95 " + (claimLoading && " loading")}>Claim all</button>
                             <div className="space-y-2.5 mt-4">
                               {_.map(staking.userStakedEntries, (entry) => {
                                 return (     
-                                  <ListItemStaking type="staked" input={entry} setLatestTx={(tx: string) => setLatestTx(tx)} />                             
+                                  <ListItemStaking type="staked" input={entry} setLatestTx={(tx: string) => setLatestTx(tx)} key={entry.nft.externalMetadata.name} />                             
                                 )
                               })}
                             </div>
@@ -113,7 +113,7 @@ export const StakingView: FC = ({ }) => {
                             <div className="space-y-2.5 mt-2">
                               {_.map(walletNFTs.walletNFTs, (nft) => {
                                 return (
-                                  <ListItemStaking type='unstaked' input={nft} setLatestTx={(tx: string) => setLatestTx(tx)} />
+                                  <ListItemStaking type='unstaked' input={nft} setLatestTx={(tx: string) => setLatestTx(tx)} key={nft.externalMetadata.name} />
                                 )
                               })}
                             </div>

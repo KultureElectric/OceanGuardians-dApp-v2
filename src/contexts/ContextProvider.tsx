@@ -11,7 +11,7 @@ import {
     SlopeWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import { FC, ReactNode, useCallback, useMemo } from 'react';
-import { notify } from "../utils/notifications";
+import { toast } from 'react-toastify';
 
 export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const network = process.env.NEXT_PUBLIC_CLUSTER as WalletAdapterNetwork;
@@ -31,7 +31,7 @@ export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children })
 
     const onError = useCallback(
         (error: WalletError) => {
-            notify({ type: 'error', message: error.message ? `${error.name}: ${error.message}` : error.name });
+            toast(error.message)
             console.error(error);
         },
         []

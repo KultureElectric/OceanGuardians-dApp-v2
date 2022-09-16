@@ -5,10 +5,11 @@ import { WalletContextProvider } from '../contexts/ContextProvider';
 import { AppBar } from '../components/AppBar';
 import { ContentContainer } from '../components/ContentContainer';
 import { Footer } from '../components/Footer';
-import Notifications from '../components/Notification'
+import { ToastContainer } from 'react-toastify'
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 require('../styles/globals.css');
+import 'react-toastify/dist/ReactToastify.css';
 
 const App: FC<AppProps> = ({ Component, pageProps }) => {
     return (
@@ -19,10 +20,22 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
 
           <WalletContextProvider>
             <div className="flex flex-col min-h-screen"> {/* with class "h-screen" the footer and header are sticky */}
-              <Notifications />
               <AppBar/>
               <ContentContainer>
                 <Component {...pageProps} />
+                <ToastContainer
+                  position="bottom-left"
+                  theme='dark'
+                  autoClose={5000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  bodyClassName={"font-bold text-sm"}
+                />
               </ContentContainer>
               <Footer/>
             </div>
