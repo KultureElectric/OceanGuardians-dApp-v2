@@ -112,7 +112,9 @@ export const StakingView: FC = ({ }) => {
                             <p className="font-bold text-lg md:text-2xl mb-4 md:mb-6 mt-2">{`Unstaked NFTs (${walletNFTs.walletNFTs.length})`}</p> 
                             <div className="space-y-2.5 mt-2">
                               {_.map(walletNFTs.walletNFTs, (nft) => {
-                                <ListItemStaking type='unstaked' input={nft} setLatestTx={(tx: string) => setLatestTx(tx)} />
+                                return (
+                                  <ListItemStaking type='unstaked' input={nft} setLatestTx={(tx: string) => setLatestTx(tx)} />
+                                )
                               })}
                             </div>
                           </div>
