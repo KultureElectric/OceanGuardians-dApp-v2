@@ -259,7 +259,6 @@ export const HomeView: FC = ({ }) => {
             <div className='mx-auto mt-5 border rounded-md'>
               <WalletMultiButton />
             </div>
-            <FontAwesomeIcon className='my-8 animate-bounce' icon={faHandPointUp} />
             </>
           )
         }

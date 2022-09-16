@@ -1,8 +1,6 @@
 import { useWallet } from "@solana/wallet-adapter-react"
 import { FC, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandPointUp } from "@fortawesome/free-solid-svg-icons";
 import _ from 'lodash';
 import { PublicKey } from "@solana/web3.js";
 import useStaking from "hooks/useStaking";
@@ -136,7 +134,6 @@ export const StakingView: FC = ({ }) => {
                     <div className='mx-auto mt-5 border rounded-md'>
                       <WalletMultiButton />
                     </div>
-                    <FontAwesomeIcon className='my-8 animate-bounce' icon={faHandPointUp} />
                   </>
                 )
                 }
