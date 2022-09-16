@@ -89,6 +89,7 @@ export const swapTrait = async(previewTrait: string, traitReference: string, act
             toast.update(toastId, {render: `Error. ${confirmation.value.err.toString()}`, type: "error", autoClose: 5000, isLoading: false})
         }
     } catch (error) {
+        toast(error.toString())
         console.log(error);
     }
 }

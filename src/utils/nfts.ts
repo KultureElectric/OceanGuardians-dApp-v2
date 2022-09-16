@@ -8,6 +8,7 @@ import { solana } from 'aleph-sdk-ts/accounts';
 import { aggregate } from 'aleph-sdk-ts';
 import { BorshAccountsCoder, Idl, utils, Program, AnchorProvider } from "@project-serum/anchor";
 import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
+import { toast } from "react-toastify"
 
 const hashList = require('../../public/mint-addresses.json');
 const idl: Idl = require('../../public/stake_pool.json');
@@ -41,6 +42,7 @@ const {
         dynamicLayers
       }
     } catch (e) {
+      toast(`failed to pull metadata for token ${mint}`)
       console.log(`failed to pull metadata for token ${mint}`)
     }
   }
@@ -91,7 +93,8 @@ export async function getStakedNFTs(
     const programID = new PublicKey('CsfVevZy66ARUY74VCw8Hqxzjkjis9qLAN3bj49m5wTB');
     const distributorProgramID = new PublicKey('DEvYCMc1BQ7uN3hHgdmHgiNQee2vydMdX3xg9ZJf42c8');
 
-    const stakedEntriesForUser = await conn.getProgramAccounts(
+    try {
+      const stakedEntriesForUser = await conn.getProgramAccounts(
         programID,
         {
             filters: [
@@ -99,20 +102,25 @@ export async function getStakedNFTs(
                 { memcmp: { offset: 81, bytes: owner.toBase58()} }
             ]
         }
-    );     
-                
-    const coder = new BorshAccountsCoder(idl);
+      );     
+                  
+      const coder = new BorshAccountsCoder(idl);
 
-    const tokens = await Promise.all(
-        _.map(stakedEntriesForUser, async account => {                    
-        const stakeEntryData = coder.decode(
-            "StakeEntry",
-            account.account.data
-        );
-        return {
-          mint: stakeEntryData.stakeMint.toBase58()
-        }
-    }))
-        
-    return await getNFTMetadataForMany(tokens, conn)
+      const tokens = await Promise.all(
+          _.map(stakedEntriesForUser, async account => {                    
+          const stakeEntryData = coder.decode(
+              "StakeEntry",
+              account.account.data
+          );
+          return {
+            mint: stakeEntryData.stakeMint.toBase58()
+          }
+      }))
+          
+      return await getNFTMetadataForMany(tokens, conn)
+
+    } catch (error) {
+      toast("Failed to load staked NFTs")
+      console.log(error);
+    }
   }

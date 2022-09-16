@@ -1,5 +1,6 @@
 import create, { State } from 'zustand'
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { toast } from 'react-toastify';
 
 interface UserSOLBalanceStore extends State {
   balance: number;
@@ -17,6 +18,7 @@ const useUserSOLBalanceStore = create<UserSOLBalanceStore>((set, _get) => ({
       );
       balance = balance / LAMPORTS_PER_SOL;
     } catch (e) {
+      toast("Error Getting Balance")
       console.log(`error getting balance: `, e);
     }
     set((s) => {

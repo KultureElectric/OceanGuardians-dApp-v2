@@ -240,7 +240,8 @@ export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: numb
  
         return stakeTx
     } catch (error) {
-        console.log("ERR:" + error);
+        toast(error.toString())
+        console.log("Err:" + error);
     }
 
 }
@@ -452,7 +453,8 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         return unstakeTx     
 
         } catch (error) {
-        console.log("Err:" + error);
+            toast(error.toString())
+            console.log("Err:" + error);
     }
 }
 
@@ -556,6 +558,7 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         return claimTx     
 
         } catch (error) {
-        console.log("Err:" + error);
+            toast(error.toString())
+            console.log("Err:" + error);
     }
 }

@@ -1,6 +1,7 @@
 import create, { State } from 'zustand'
 import { Connection, PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { toast } from 'react-toastify'
 
 export const waveMint = new PublicKey('wavewWFGmDDTJ3CU1AeU1eXUNjxnN8JJY8hSpi7Hz1V');
 
@@ -22,6 +23,7 @@ const useUserTokenBalanceStore = create<UserTokenBalanceStore>((set, _get) => ({
     
       balance = (await connection.getTokenAccountBalance(ata)).value.uiAmount;
     } catch (e) {
+      toast("Error Getting Balance")
       console.log(`error getting balance: `, e);
     }
     set((s) => {
