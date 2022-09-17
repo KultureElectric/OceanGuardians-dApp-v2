@@ -18,7 +18,7 @@ const NFTDisplay = ({activeNFT, traitReference, previewTrait}: any) => {
                     
                 }
                 return (
-                    <Image key={key} className={config[key].order + " rounded"} src={`/traits/${key}/${activeNFT.dynamicLayers[key]}.png`} layout="fill" />
+                    <Image key={key} className={config[key].order + " rounded"} src={`/traits/${key}/${activeNFT.dynamicLayers[key].replace('iT', 'i-T')}.png`} layout="fill" />
                 )
             })
             }

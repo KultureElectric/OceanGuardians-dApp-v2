@@ -20,7 +20,7 @@ const ListItemStaking = ({input, type, setLatestTx}) => {
     if (type === 'unstaked') {
         _.forEach(Object.keys(config), (key) => {
             multiplier *= _.find(config[key].traits, o => {
-            return o.name === nft.dynamicLayers[key]
+            return o.name === nft.dynamicLayers[key].replace('iT', 'i-T')
             })?.multiplier;
         })   
     }
