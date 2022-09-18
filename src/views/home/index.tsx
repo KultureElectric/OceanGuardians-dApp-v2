@@ -66,7 +66,7 @@ export const HomeView: FC = ({ }) => {
         return o.name === previewTrait
       })?.price
 
-    if (activeNFT.onchainMetadata.updateAuthority !== "CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK") {
+    if (activeNFT.onchainMetadata.updateAuthority !== "AY4u7WTEpbyJ2GLb7KsuuvMkFyqvfNp1mvN32SiDjXnG") {
       setFormError('Unstake your OG before swapping');
     } else if (previewTrait === "") {
       setFormError("Select a trait")
