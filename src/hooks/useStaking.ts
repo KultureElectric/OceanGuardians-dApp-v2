@@ -90,8 +90,8 @@ const useStaking = (tx: string) => {
 
           // Calculate Claimable rewards   
 
-          const time = await connection.getBlockTime((await connection.getEpochInfo()).absoluteSlot)                    
-
+          const time = await connection.getBlockTime((await connection.getSlot("processed")))              
+ 
           const claimableRewards = 
               ((stakeEntryData.totalStakeSeconds.toNumber() - rewardEntry.rewardSecondsReceived.toNumber())
               + (time - stakeEntryData.lastStakedAt.toNumber()))
