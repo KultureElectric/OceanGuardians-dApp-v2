@@ -64,7 +64,7 @@ export const HomeView: FC = ({ }) => {
       // get price for transaction
       const price = _.find(config[traitReference].traits, (o) => {
         return o.name === previewTrait
-      })?.price
+      })?.price;    
 
     if (activeNFT.onchainMetadata.updateAuthority !== "AY4u7WTEpbyJ2GLb7KsuuvMkFyqvfNp1mvN32SiDjXnG") {
       setFormError('Unstake your OG before swapping');

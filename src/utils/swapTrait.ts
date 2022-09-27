@@ -38,7 +38,7 @@ export const swapTrait = async(previewTrait: string, traitReference: string, act
             splToken.TOKEN_PROGRAM_ID,
             ata,
             waveMint,
-            new PublicKey('Gi3cbLCWB8M2TJFShQ47AKVQpbzJoxnHVSUHdGdVCM2C'),
+            new PublicKey('CSw5zDFYyF6NeGZCecezgrHYSvZfV5UCejwTv3bjBUhE'),
             wallet.publicKey,
             [],
             price * LAMPORTS_PER_SOL,

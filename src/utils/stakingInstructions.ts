@@ -196,7 +196,7 @@ export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: numb
             .accounts({
                 stakeEntry: stakeEntryPda,
                 originalMint: nftMint,
-                receiptMint: stakeMintKeypair.publicKey,
+                receiptMint: stakeMintKeypair.publicKey, // TODO: change to originalMint
                 stakeEntryReceiptMintTokenAccount: stakeEntryStakeMintTokenAccountId, 
                 user: wallet.publicKey,
                 userReceiptMintTokenAccount: userReceiptMintAta,
@@ -334,7 +334,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         )
     }
 
-    const rewardDistributorTokenAccount = await getATAAddressSync({
+    const rewardDistributorTokenAccount = getATAAddressSync({
         mint: rewardMint,
         owner: rewardDistributorPda
     })
