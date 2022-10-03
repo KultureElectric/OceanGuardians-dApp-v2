@@ -9,7 +9,7 @@ import { aggregate } from 'aleph-sdk-ts';
 import { BorshAccountsCoder, Idl, utils, Program, AnchorProvider } from "@project-serum/anchor";
 import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
 import { toast } from "react-toastify"
-import { StakeEntry } from "./stake_pool";
+import { PROGRAM_ID } from "./stake_pool";
 
 const hashList = require('../../public/mint-addresses.json');
 const idl: Idl = require('../../public/stake_pool.json');
@@ -94,12 +94,9 @@ export async function getStakedNFTs(
     owner: PublicKey,
     conn: Connection
   ) {
-    const programID = new PublicKey('CsfVevZy66ARUY74VCw8Hqxzjkjis9qLAN3bj49m5wTB');
-    const distributorProgramID = new PublicKey('DEvYCMc1BQ7uN3hHgdmHgiNQee2vydMdX3xg9ZJf42c8');
-
     try {
       const stakedEntriesForUser = await conn.getProgramAccounts(
-        programID,
+        PROGRAM_ID,
         {
             filters: [
                 { memcmp: { offset: 41, bytes: bs58.encode([1])} },

@@ -25,13 +25,10 @@ import {
 } from "@cardinal/token-manager/dist/cjs/programs/tokenManager";
 import { tokenManager } from "@cardinal/token-manager/dist/cjs/programs";
 import _ from "lodash";
-import { createInitEntryInstruction, createStakeInstruction, createUnstakeInstruction, createCloseStakeEntryInstruction, createClaimReceiptMintInstruction, PROGRAM_ID as poolProgramId, StakeEntry } from "./stake_pool" // TODO: Imports
-import { createInitRewardEntryInstruction, createClaimRewardsInstruction, createUpdateRewardEntryInstruction, createCloseRewardEntryInstruction, PROGRAM_ID as distributorProgramId, RewardDistributor } from "./reward_distributor" // TODO: Imports
+import { createInitEntryInstruction, createStakeInstruction, createUnstakeInstruction, createCloseStakeEntryInstruction, createClaimReceiptMintInstruction, PROGRAM_ID as poolProgramId, StakeEntry } from "./stake_pool";
+import { createInitRewardEntryInstruction, createClaimRewardsInstruction, createUpdateRewardEntryInstruction, createCloseRewardEntryInstruction, PROGRAM_ID as distributorProgramId, RewardDistributor } from "./reward_distributor";
 
 import { toast } from "react-toastify"
-
-const poolIdl: StakePool = require("../../public/stake_pool.json");
-const distributorIdl: OgRewardDistributor = require("../../public/og_reward_distributor.json");
 
 export const poolSeed = new PublicKey("CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK");
 const rewardManager = new PublicKey("Bsuz9UMhvY6pYs7RsKPPmusm8ks4xHSR3QQUq8mNt3Bf");
@@ -262,7 +259,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         poolProgramId
     );
 
-    const stakeEntryAccount = await StakeEntry.fromAccountAddress(connection, stakeEntryPda) // TODO: Check if working
+    const stakeEntryAccount = await StakeEntry.fromAccountAddress(connection, stakeEntryPda);
 
     const stakeEntryOriginalMintAta = getATAAddressSync({ mint: nftMint, owner: stakeEntryPda })
 
@@ -365,7 +362,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         distributorProgramId
     )
 
-    const rewardMint = (await RewardDistributor.fromAccountAddress(connection, rewardDistributorPda)).rewardMint // TODO: check if working
+    const rewardMint = (await RewardDistributor.fromAccountAddress(connection, rewardDistributorPda)).rewardMint;
 
     const userRewardMintAta = await getOrCreateATA({
         provider: saberProvider,
@@ -491,7 +488,7 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         distributorProgramId
     );
 
-    const rewardMint = (await RewardDistributor.fromAccountAddress(connection, rewardDistributorPda)).rewardMint // TODO: Check if working
+    const rewardMint = (await RewardDistributor.fromAccountAddress(connection, rewardDistributorPda)).rewardMint
 
     const userRewardMintTokenAccount = await getOrCreateATA({
         provider: saberProvider,

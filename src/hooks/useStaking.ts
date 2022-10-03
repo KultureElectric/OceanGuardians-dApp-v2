@@ -13,8 +13,9 @@ import { useEffect, useState } from "react";
 
 import { getNFTMetadata } from "utils/nfts";
 import { PROGRAM_ID as poolProgramId } from "utils/stake_pool";
-import { PROGRAM_ID as distributorProgramId } from "utils/reward_distributor";
+import { PROGRAM_ID as distributorProgramId, RewardEntry } from "utils/reward_distributor";
 import { NFT } from "./useWalletNFTs";
+import { RewardDistributor } from "utils/reward_distributor";
 
 const poolIdl: StakePool = require("../../public/stake_pool.json");
 const distributorIdl: OgRewardDistributor = require("../../public/og_reward_distributor.json");
@@ -52,7 +53,7 @@ const useStaking = (tx: string) => {
             distributorProgramId
         );
         
-        const rewardDistributor = await distributorProgram.account.rewardDistributor.fetch(rewardDistributorPda)
+        const rewardDistributor = await RewardDistributor.fromAccountAddress(connection, rewardDistributorPda)
         
         const userStakedEntriesRaw = await connection.getProgramAccounts(
           poolProgramId,
@@ -76,7 +77,7 @@ const useStaking = (tx: string) => {
             distributorProgramId
           );                    
 
-          const rewardEntry = await distributorProgram.account.rewardEntry.fetch(rewardEntryPda);
+          const rewardEntry = await RewardEntry.fromAccountAddress(connection, rewardEntryPda)
 
           // Fetch Metaplex NFT
           let stakedNFT: NFT;
