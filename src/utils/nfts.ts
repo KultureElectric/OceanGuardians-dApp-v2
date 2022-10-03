@@ -9,6 +9,7 @@ import { aggregate } from 'aleph-sdk-ts';
 import { BorshAccountsCoder, Idl, utils, Program, AnchorProvider } from "@project-serum/anchor";
 import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
 import { toast } from "react-toastify"
+import { StakeEntry } from "./stake_pool";
 
 const hashList = require('../../public/mint-addresses.json');
 const idl: Idl = require('../../public/stake_pool.json');
@@ -55,7 +56,7 @@ const {
     isStaked?: boolean
   ): Promise<NFT[]> {
     const promises: Promise<NFT | undefined>[] = []
-    tokens.forEach((token) =>      
+    tokens.forEach((token) => 
       promises.push(getNFTMetadata(token.mint, conn, token.pubkey, isStaked))
     )
     const nfts = (await Promise.all(promises)).filter((n) => !!n)    

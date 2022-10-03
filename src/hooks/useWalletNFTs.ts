@@ -40,14 +40,15 @@ const useWalletNFTs = (single?: boolean, latestTx?: string) => {
   useEffect(() => {
     const fetchNFTs = async () => {
       setLoading(true)
-      const NFTs = await getNFTsByOwner(publicKey, connection)
-      setWalletNFTs(NFTs)
+      const stakedNFTs = await getStakedNFTs(publicKey, connection);  
+      const NFTs = await getNFTsByOwner(publicKey, connection);
+
+      setWalletNFTs([...NFTs.filter(val => stakedNFTs.includes(val)), ...stakedNFTs])
       if (single) {
+        setWalletNFTs([...NFTs.filter(val => stakedNFTs.includes(val))])
         setLoading(false);
         return;
       }
-      const stakedNFTs = await getStakedNFTs(publicKey, connection);      
-      setWalletNFTs(nfts => [...nfts, ...stakedNFTs]);
       setLoading(false);
     }
 

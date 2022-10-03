@@ -17,7 +17,7 @@ const ListItem = ({nft, setActiveNFT, activeNFT, reload}) => {
             onClick={() => setActiveNFT(nft)}>
             <div className={"absolute w-36 md:w-44 aspect-square z-10 rounded hover:bg-second " + (loading && "bg-header animate-pulse") + (activeNFT === nft && " !w-40 md:!w-48")}>
                 <p className="absolute bottom-0 left-0 px-2 pt-1 font-bold bg-header rounded-bl-sm">{nft.externalMetadata.name.split(" ")[1]}
-                    <FontAwesomeIcon className={nft.onchainMetadata.updateAuthority === "AY4u7WTEpbyJ2GLb7KsuuvMkFyqvfNp1mvN32SiDjXnG" ? "invisible" : "ml-2"} icon={faLock} />
+                    <FontAwesomeIcon className={nft.isStaked ? "ml-2" : "invisible"} icon={faLock} />
 
                 </p>
             </div>

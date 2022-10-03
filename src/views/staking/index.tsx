@@ -15,7 +15,7 @@ export const StakingView: FC = ({ }) => {
 
     const wallet = useWallet();
     const staking = useStaking(latestTx);
-    const walletNFTs = useWalletNFTs(true, latestTx); // true in order to skip staked NFTs
+    const walletNFTs = useWalletNFTs(true, latestTx); // true to only return unstake NFTs    
 
     const claimStakingRewards = async() => {
       setClaimLoading(true)
