@@ -3,6 +3,7 @@ import { programs } from "@metaplex/js"
 import { useEffect, useState } from "react"
 import { getNFTsByOwner, getStakedNFTs } from "../utils/nfts"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
+import _ from "lodash"
 
 export type NFT = {
   pubkey?: PublicKey
@@ -43,11 +44,13 @@ const useWalletNFTs = (single?: boolean, latestTx?: string) => {
       const stakedNFTs = await getStakedNFTs(publicKey, connection);  
       const NFTs = await getNFTsByOwner(publicKey, connection);
 
-      setWalletNFTs([...NFTs.filter(val => stakedNFTs.includes(val)), ...stakedNFTs])
+      const stakedNFTMints = stakedNFTs.map(val => val.mint.toBase58());
+
+      const unstakedNFTs = _.filter(NFTs, (nft) => !_.includes(stakedNFTMints, nft.mint.toBase58()))
+
+      setWalletNFTs([...unstakedNFTs, ...stakedNFTs])
       if (single) {
-        setWalletNFTs([...NFTs.filter(val => stakedNFTs.includes(val))])
-        setLoading(false);
-        return;
+        setWalletNFTs(unstakedNFTs)
       }
       setLoading(false);
     }

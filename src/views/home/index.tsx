@@ -40,8 +40,6 @@ export const HomeView: FC = ({ }) => {
   const wallet = useWallet();
   const walletNFTs = useWalletNFTs();  
   
-  console.log(walletNFTs);
-
   const refSwap = useRef(null);
   
   const { connection } = useConnection();
