@@ -30,6 +30,7 @@
     "add": "^2.0.6",
     "aleph-sdk-ts": "^2.2.2",
     "daisyui": "^1.24.3",
+    "dynamiclabs-staking": "^1.0.1",
     "immer": "^9.0.12",
     "jsbi": "^4.3.0",
     "next": "12.0.8",

@@ -12,8 +12,11 @@ import { OgRewardDistributor } from "../../public/og_reward_distributor";
 import { useEffect, useState } from "react";
 
 import { getNFTMetadata } from "utils/nfts";
+import { PROGRAM_ID as poolProgramId } from "utils/stake_pool";
+import { PROGRAM_ID as distributorProgramId } from "utils/reward_distributor";
+import { NFT } from "./useWalletNFTs";
 
-const idl: StakePool = require("../../public/stake_pool.json");
+const poolIdl: StakePool = require("../../public/stake_pool.json");
 const distributorIdl: OgRewardDistributor = require("../../public/og_reward_distributor.json");
 
 const baseRate = 60;
@@ -22,17 +25,14 @@ const useStaking = (tx: string) => {
   const { connection } = useConnection();  
   const wallet = useWallet();
 
-  const programID = new PublicKey('CsfVevZy66ARUY74VCw8Hqxzjkjis9qLAN3bj49m5wTB');
-  const distributorProgramID = new PublicKey('DEvYCMc1BQ7uN3hHgdmHgiNQee2vydMdX3xg9ZJf42c8')
-
   const [loading, setLoading] = useState(true)
   const [userStakedEntries, setUserStakedEntries] = useState([]);
   const [totalClaimableRewards, setTotalClaimableRewards] = useState(0);
   const [totalDailyAccrualRate, setTotalDailyAccrualRate] = useState(0);
 
   const provider = new AnchorProvider(connection, wallet, {});
-  const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);    
-  const poolAuthority = new PublicKey("CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK");
+  const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramId, provider);    
+  const poolSeed = new PublicKey("CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK");
 
   useEffect(() => {
     const fetchStaking = async() => {
@@ -43,19 +43,19 @@ const useStaking = (tx: string) => {
 
       try {
         const [stakePoolPda] = await PublicKey.findProgramAddress(
-          [Buffer.from("stake-pool"), poolAuthority.toBuffer()],
-          programID
+          [Buffer.from("stake-pool"), poolSeed.toBuffer()],
+          poolProgramId
         );
 
         const [rewardDistributorPda] = await PublicKey.findProgramAddress(
             [utils.bytes.utf8.encode("reward-distributor"), stakePoolPda.toBuffer()],
-            distributorProgramID
+            distributorProgramId
         );
         
         const rewardDistributor = await distributorProgram.account.rewardDistributor.fetch(rewardDistributorPda)
         
         const userStakedEntriesRaw = await connection.getProgramAccounts(
-          programID,
+          poolProgramId,
           {
               filters: [
                   { memcmp: { offset: 41, bytes: bs58.encode([1])} },
@@ -64,7 +64,7 @@ const useStaking = (tx: string) => {
           }
         );     
 
-        const coder = new BorshAccountsCoder(idl);
+        const coder = new BorshAccountsCoder(poolIdl);
 
         for (const account of userStakedEntriesRaw) {
           const stakeEntryData = coder.decode(
@@ -73,20 +73,25 @@ const useStaking = (tx: string) => {
           );   
           const [rewardEntryPda] = await PublicKey.findProgramAddress(
             [utils.bytes.utf8.encode("reward-entry"), rewardDistributorPda.toBuffer(), account.pubkey.toBuffer()],
-            distributorProgramID
+            distributorProgramId
           );                    
 
           const rewardEntry = await distributorProgram.account.rewardEntry.fetch(rewardEntryPda);
 
           // Fetch Metaplex NFT
-          const stakedNFT = await getNFTMetadata(stakeEntryData.stakeMint.toBase58(), connection); 
+          let stakedNFT: NFT;
+          if (stakeEntryData.stakeMint) {
+            stakedNFT = await getNFTMetadata(stakeEntryData.stakeMint.toBase58(), connection); 
+          } else {
+            stakedNFT = await getNFTMetadata(stakeEntryData.originalMint.toBase58(), connection);
+          }
 
           // Fetch Dynamic Layers
           const id = stakedNFT?.externalMetadata.name.replace(' #', 'Official');
 
           const alephAcc = solana.ImportAccountFromPrivateKey(Uint8Array.from(JSON.parse(process.env.NEXT_PUBLIC_ALEPH_KP || '')));
 
-          const dynamicLayers: any = await aggregate.Get({address: alephAcc.address, keys: [id], APIServer: "https://api2.aleph.im"});
+          const dynamicLayers: any = await aggregate.Get({address: alephAcc.address, keys: [id], APIServer: "https://official.aleph.cloud"});
 
           // Calculate Claimable rewards   
 

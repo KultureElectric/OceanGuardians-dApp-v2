@@ -25,202 +25,196 @@ import {
 } from "@cardinal/token-manager/dist/cjs/programs/tokenManager";
 import { tokenManager } from "@cardinal/token-manager/dist/cjs/programs";
 import _ from "lodash";
+import { createInitEntryInstruction, createStakeInstruction, createUnstakeInstruction, createCloseStakeEntryInstruction, createClaimReceiptMintInstruction, PROGRAM_ID as poolProgramId, StakeEntry } from "./stake_pool" // TODO: Imports
+import { createInitRewardEntryInstruction, createClaimRewardsInstruction, createUpdateRewardEntryInstruction, createCloseRewardEntryInstruction, PROGRAM_ID as distributorProgramId, RewardDistributor } from "./reward_distributor" // TODO: Imports
 
 import { toast } from "react-toastify"
 
-const idl: StakePool = require("../../public/stake_pool.json");
+const poolIdl: StakePool = require("../../public/stake_pool.json");
 const distributorIdl: OgRewardDistributor = require("../../public/og_reward_distributor.json");
 
-const programID = new PublicKey('CsfVevZy66ARUY74VCw8Hqxzjkjis9qLAN3bj49m5wTB');
-const distributorProgramID = new PublicKey('DEvYCMc1BQ7uN3hHgdmHgiNQee2vydMdX3xg9ZJf42c8');
-const poolAccount = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.NEXT_PUBLIC_STAKE_POOL_KP || '')));
+export const poolSeed = new PublicKey("CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK");
+const rewardManager = new PublicKey("Bsuz9UMhvY6pYs7RsKPPmusm8ks4xHSR3QQUq8mNt3Bf");
+
+const stakingAuthority = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.NEXT_PUBLIC_STAKING_AUTHORITY)))
 
 const connection = new Connection(process.env.NEXT_PUBLIC_ENDPOINT, "confirmed");
 
 // stake function
 
 export const stakeNFTs = async(nftMint: PublicKey, wallet: any, multiplier: number) => {
-    const stakeMintKeypair = Keypair.generate();
+    // const stakeMintKeypair = Keypair.generate();
 
     const provider = new AnchorProvider(connection, wallet, {});
-    const program = new Program<StakePool>(idl, programID, provider);
-    const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);    
+    const saberProvider = SolanaProvider.init({
+        connection: connection,
+        wallet: wallet,
+    })
+    // const poolProgram = new Program<StakePool>(poolIdl, poolProgramId, provider);
+    // const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramId, provider);    
 
     let transaction = new Transaction();
 
     // Init Stake Entry
 
-    const poolAuthority = new PublicKey("CxT4Tg9m9hWrCdbZU7Sm375SYGK1NE7RYwoUabWNE8aK");
-
     const [stakePoolPda] = await PublicKey.findProgramAddress(
-        [Buffer.from("stake-pool"), poolAuthority.toBuffer()],
-        programID
+        [Buffer.from("stake-pool"), poolSeed.toBuffer()],
+        poolProgramId
         );    
 
     const[stakeEntryPda] = await PublicKey.findProgramAddress(
         [Buffer.from("stake-entry"), stakePoolPda.toBuffer(), nftMint.toBuffer(), wallet.publicKey.toBuffer()],
-        programID
+        poolProgramId
     );
 
-    const NFTMetadata = await metaplex.Metadata.getPDA(nftMint);
+    const nftMetadata = await metaplex.Metadata.getPDA(nftMint);
 
     // Init Stake Entry
 
     transaction.add(
-        await program.methods.initEntry(wallet.publicKey)
-            .accounts({
+            createInitEntryInstruction({
                 stakeEntry: stakeEntryPda,
                 stakePool: stakePoolPda,
                 originalMint: nftMint,
-                originalMintMetadata: NFTMetadata,
+                originalMintMetadata: nftMetadata,
                 payer: wallet.publicKey,
                 systemProgram: SystemProgram.programId
-            })
-            .instruction()
-    )
+            }, {user: wallet.publicKey})
+        )
 
     // Init Reward Entry
     
     const [rewardDistributorPda] = await PublicKey.findProgramAddress(
         [utils.bytes.utf8.encode("reward-distributor"), stakePoolPda.toBuffer()],
-        distributorProgram.programId
+        distributorProgramId
         )
 
     const [rewardEntryPda] = await PublicKey.findProgramAddress(
         [utils.bytes.utf8.encode("reward-entry"), rewardDistributorPda.toBuffer(), stakeEntryPda.toBuffer()],
-        distributorProgram.programId
+        distributorProgramId
         );        
     
     transaction.add(
-        await distributorProgram.methods.initRewardEntry({multiplier: new BN(multiplier * 100)})
-            .accounts({
+            createInitRewardEntryInstruction({
                 rewardEntry: rewardEntryPda,
                 stakeEntry: stakeEntryPda,
                 rewardDistributor: rewardDistributorPda,
-                authority: poolAccount.publicKey,
+                authority: stakingAuthority.publicKey,
                 payer: wallet.publicKey,
                 systemProgram: SystemProgram.programId
-            })
-            .signers([wallet, poolAccount])
-            .instruction()
-    )
+            }, {ix: {multiplier: new BN(multiplier * 100)}})
+        )
 
     // Init Stake Mint
 
-    const [mintManagerId] = await findMintManagerId(stakeMintKeypair.publicKey)
+    // const [mintManagerId] = await findMintManagerId(stakeMintKeypair.publicKey)
 
-    const stakeMintMetadataId = await metaplex.Metadata.getPDA(stakeMintKeypair.publicKey);
+    // const stakeMintMetadataId = await metaplex.Metadata.getPDA(stakeMintKeypair.publicKey);
 
-    const stakeEntryStakeMintTokenAccountId = await getATAAddressSync({
-        mint: stakeMintKeypair.publicKey,
-        owner: stakeEntryPda
-    });    
+    // const stakeEntryStakeMintTokenAccountId = await getATAAddressSync({
+    //     mint: stakeMintKeypair.publicKey,
+    //     owner: stakeEntryPda
+    // });    
 
-    transaction.add(
-        await program.methods.initStakeMint()
-            .accounts({
-                stakeEntry: stakeEntryPda,
-                stakePool: stakePoolPda,
-                originalMint: nftMint,
-                originalMintMetadata: NFTMetadata,
-                stakeMint: stakeMintKeypair.publicKey,
-                stakeMintMetadata: stakeMintMetadataId,
-                stakeEntryStakeMintTokenAccount: stakeEntryStakeMintTokenAccountId,
-                mintManager: mintManagerId,
-                payer: wallet.publicKey,
-                rent: SYSVAR_RENT_PUBKEY,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                tokenManagerProgram: TOKEN_MANAGER_ADDRESS ,
-                systemProgram: SystemProgram.programId,
-                tokenMetadataProgram: metaplex.MetadataProgram.PUBKEY,
-                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
-            })
-            .signers([stakeMintKeypair, wallet])
-            .instruction()
-    );
+    // transaction.add(
+    //     await poolProgram.methods.initStakeMint()
+    //         .accounts({
+    //             stakeEntry: stakeEntryPda,
+    //             stakePool: stakePoolPda,
+    //             originalMint: nftMint,
+    //             originalMintMetadata: nftMetadata,
+    //             stakeMint: stakeMintKeypair.publicKey,
+    //             stakeMintMetadata: stakeMintMetadataId,
+    //             stakeEntryStakeMintTokenAccount: stakeEntryStakeMintTokenAccountId,
+    //             mintManager: mintManagerId,
+    //             payer: wallet.publicKey,
+    //             rent: SYSVAR_RENT_PUBKEY,
+    //             tokenProgram: TOKEN_PROGRAM_ID,
+    //             tokenManagerProgram: TOKEN_MANAGER_ADDRESS ,
+    //             systemProgram: SystemProgram.programId,
+    //             tokenMetadataProgram: metaplex.MetadataProgram.PUBKEY,
+    //             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+    //         })
+    //         .signers([stakeMintKeypair, wallet])
+    //         .instruction()
+    // );
 
     // Stake
 
-    let stakeEntryOriginalMintTokenAccountId = await getATAAddressSync({
+    let stakeEntryOriginalMintAta = getATAAddressSync({ // Not sure if ata creation is neccessary
         mint: nftMint,
         owner: stakeEntryPda,
       })  
     
-    const originalNFTAccount = await getATAAddressSync({
+    const userOriginalMintAta = getATAAddressSync({
         mint: nftMint,
         owner: wallet.publicKey
     });
 
     transaction.add(
-        await program.methods.stake(new BN(1))
-            .accounts({
+            createStakeInstruction({
                 stakeEntry: stakeEntryPda,
-                stakeEntryOriginalMintTokenAccount: stakeEntryOriginalMintTokenAccountId,
+                stakeEntryOriginalMintTokenAccount: stakeEntryOriginalMintAta,
                 originalMint: nftMint,
                 user: wallet.publicKey,
-                userOriginalMintTokenAccount: originalNFTAccount,
+                userOriginalMintTokenAccount: userOriginalMintAta,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 systemProgram: SystemProgram.programId,
-                rent: SYSVAR_RENT_PUBKEY,
-                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
-            })
-            .signers([wallet])
-            .instruction()
-    )
+                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                rent: SYSVAR_RENT_PUBKEY
+            }, {amount: new BN(1)})
+        )
 
     // Claim Receipt
 
-    const [tokenManagerAddress] = await findTokenManagerAddress(stakeMintKeypair.publicKey)
+    const [tokenManagerAddress] = await findTokenManagerAddress(nftMint)
 
-    let userReceiptMintAta = await getATAAddressSync({
-        mint: stakeMintKeypair.publicKey,
-        owner: wallet.publicKey,
-    })
+        const tokenManagerReceiptMintTokenAccountId = await getOrCreateATA({
+            provider: saberProvider,
+            mint: nftMint,
+            owner: tokenManagerAddress
+        });
 
-    const [mintCounterId] = await findMintCounterId(
-    stakeMintKeypair.publicKey,
-    );
+        if (tokenManagerReceiptMintTokenAccountId.instruction) {
+            transaction.add(tokenManagerReceiptMintTokenAccountId.instruction)
+        }
 
-    const remainingAccounts = await getRemainingAccountsForKind(
-    stakeMintKeypair.publicKey,
-    TokenManagerKind.Managed
-    );
+        const [mintCounterId] = await findMintCounterId(
+            nftMint,
+        );
 
-    const tokenManagerReceiptMintTokenAccountId = await getATAAddressSync({
-        mint: stakeMintKeypair.publicKey,
-        owner: tokenManagerAddress
-    })
+        const remainingAccounts = await getRemainingAccountsForKind( // Edition accounts
+            nftMint,
+            TokenManagerKind.Edition
+        );
 
     transaction.add(
-        await program.methods.claimReceiptMint()
-            .accounts({
+            createClaimReceiptMintInstruction({
                 stakeEntry: stakeEntryPda,
                 originalMint: nftMint,
-                receiptMint: stakeMintKeypair.publicKey, // TODO: change to originalMint
-                stakeEntryReceiptMintTokenAccount: stakeEntryStakeMintTokenAccountId, 
+                receiptMint: nftMint, // same as original Mint
+                stakeEntryReceiptMintTokenAccount: stakeEntryOriginalMintAta,
                 user: wallet.publicKey,
-                userReceiptMintTokenAccount: userReceiptMintAta,
-                tokenManagerReceiptMintTokenAccount: tokenManagerReceiptMintTokenAccountId,
-                tokenManager: tokenManagerAddress, 
+                userReceiptMintTokenAccount: userOriginalMintAta,
+                tokenManagerReceiptMintTokenAccount: tokenManagerReceiptMintTokenAccountId.address,
+                tokenManager: tokenManagerAddress,
                 mintCounter: mintCounterId,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 tokenManagerProgram: TOKEN_MANAGER_ADDRESS,
                 associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
                 systemProgram: SystemProgram.programId,
-                rent: SYSVAR_RENT_PUBKEY
+                rent: SYSVAR_RENT_PUBKEY,
+                anchorRemainingAccounts: remainingAccounts
             })
-            .signers([wallet])
-            .remainingAccounts(remainingAccounts)
-            .instruction()
-    )
+        )
 
     try {
         const blockhash = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash.blockhash
         transaction.feePayer = wallet.publicKey;
         await wallet.signTransaction(transaction);
-        transaction.partialSign(stakeMintKeypair)
-        transaction.partialSign(poolAccount)
+        // transaction.partialSign(stakeMintKeypair)
+        transaction.partialSign(stakingAuthority)
          
         const stakeTx = await connection.sendRawTransaction(transaction.serialize());
 
@@ -253,35 +247,47 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         wallet: wallet
     })
 
-    const program = new Program<StakePool>(idl, programID, provider);
-    const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);
+    // const poolProgram = new Program<StakePool>(poolIdl, poolProgramId, provider);
+    // const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramId, provider);
 
     let transaction = new Transaction();
 
     const [stakePoolPda] = await PublicKey.findProgramAddress(
-        [Buffer.from("stake-pool"), poolAccount.publicKey.toBuffer()],
-        programID
+        [Buffer.from("stake-pool"), poolSeed.toBuffer()],
+        poolProgramId
         );    
 
     const[stakeEntryPda] = await PublicKey.findProgramAddress(
         [Buffer.from("stake-entry"), stakePoolPda.toBuffer(), nftMint.toBuffer(), wallet.publicKey.toBuffer()],
-        programID
+        poolProgramId
     );
 
-    const stakeEntryAccount = await program.account.stakeEntry.fetch(stakeEntryPda);
+    const stakeEntryAccount = await StakeEntry.fromAccountAddress(connection, stakeEntryPda) // TODO: Check if working
 
-    const stakeEntryStakeMintTokenAccountId = await getATAAddressSync({
-        mint: stakeEntryAccount.stakeMint,
-        owner: stakeEntryPda
-    });  
+    const stakeEntryOriginalMintAta = getATAAddressSync({ mint: nftMint, owner: stakeEntryPda })
+
+    let remainingAccountsUnstake
+
 
     if (stakeEntryAccount.stakeMint && stakeEntryAccount.stakeMintClaimed) { // TODO: look here when updating contract
+        const stakeEntryStakeMintTokenAccountId = getATAAddressSync({
+            mint: stakeEntryAccount.stakeMint,
+            owner: stakeEntryPda
+        });
+
+        remainingAccountsUnstake = [{
+            pubkey: stakeEntryStakeMintTokenAccountId,
+            isSigner: false,
+            isWritable: false,
+        }]
+
+        console.log("returning NFT copy");
     
         const [tokenManagerAddress] = await findTokenManagerAddress(stakeEntryAccount.stakeMint)
 
         const tokenManagerData = await tryGetAccount(() =>
         tokenManager.accounts.getTokenManager(connection, tokenManagerAddress)
-        );    
+        );            
         
         const remainingAccountsForReturn = await withRemainingAccountsForReturn(
             new Transaction(),
@@ -305,21 +311,61 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
                 remainingAccountsForReturn
             )
         )
-    }    
+    } else if (!stakeEntryAccount.stakeMint && stakeEntryAccount.stakeMintClaimed) {
+        remainingAccountsUnstake = [{
+            pubkey: stakeEntryOriginalMintAta,
+            isSigner: false,
+            isWritable: false,
+        }]
+
+        console.log("Invalidating Token Manager");
+        
+        const [tokenManagerAddress] = await findTokenManagerAddress(nftMint);
+        
+        const tokenManagerAta = getATAAddressSync({
+            mint: nftMint,
+            owner: tokenManagerAddress
+        });
+
+        const tokenManagerData = await tryGetAccount(() =>
+            tokenManager.accounts.getTokenManager(connection, tokenManagerAddress)
+        );                     
+
+        const remainingAccountsForReturn = await withRemainingAccountsForReturn(
+            new Transaction(),
+            connection,
+            wallet,
+            tokenManagerData,
+        ); 
+
+        transaction.add(
+            await tokenManager.instruction.invalidate(
+                connection,
+                wallet,
+                nftMint,
+                tokenManagerAddress,
+                TokenManagerKind.Edition,
+                tokenManagerData.parsed.state,
+                tokenManagerAta,
+                tokenManagerData.parsed.recipientTokenAccount,
+                remainingAccountsForReturn
+            )
+        )
+    }
 
     // Claim rewards
 
     const [rewardDistributorPda] = await PublicKey.findProgramAddress(
         [utils.bytes.utf8.encode("reward-distributor"), stakePoolPda.toBuffer()],
-        distributorProgram.programId
+        distributorProgramId
     )
 
     const [rewardEntryPda] = await PublicKey.findProgramAddress(
         [utils.bytes.utf8.encode("reward-entry"), rewardDistributorPda.toBuffer(), stakeEntryPda.toBuffer()],
-        distributorProgram.programId
+        distributorProgramId
     )
 
-    const rewardMint = (await distributorProgram.account.rewardDistributor.fetch(rewardDistributorPda)).rewardMint;
+    const rewardMint = (await RewardDistributor.fromAccountAddress(connection, rewardDistributorPda)).rewardMint // TODO: check if working
 
     const userRewardMintAta = await getOrCreateATA({
         provider: saberProvider,
@@ -340,8 +386,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
     })
 
     transaction.add(
-        await distributorProgram.methods.claimRewards()
-            .accounts({
+        createClaimRewardsInstruction({
             rewardEntry: rewardEntryPda,
             rewardDistributor: rewardDistributorPda,
             rewardDistributorTokenAccount: rewardDistributorTokenAccount,
@@ -349,82 +394,50 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
             stakePool: stakePoolPda,
             rewardMint: rewardMint,
             userRewardMintTokenAccount: userRewardMintAta.address,
-            rewardManager: poolAccount.publicKey,
+            rewardManager: rewardManager,
             user: wallet.publicKey,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId
-            })
-            .signers([wallet])
-            .instruction()
+        })
     )
+
 
     // Delete Reward Entry
 
     transaction.add(
-        await distributorProgram.methods.closeRewardEntry()
-            .accounts( {
+            createCloseRewardEntryInstruction({
                 rewardDistributor: rewardDistributorPda,
                 rewardEntry: rewardEntryPda,
-                authority: poolAccount.publicKey
+                rewardManager: rewardManager,
+                authority: stakingAuthority.publicKey
             })
-            .signers([poolAccount, wallet])
-            .instruction()
-    )
+        )
 
     // Unstake
 
-    const stakeEntryOriginalMintTokenAccountId = await getOrCreateATA({ provider: saberProvider, mint: nftMint, owner: stakeEntryPda, payer: wallet.publicKey })
-
-    if (stakeEntryOriginalMintTokenAccountId.instruction) {
-        console.log("stakeEntryOriginalMintTokenAccountId is being initialized");
-
-        transaction.add(
-            stakeEntryOriginalMintTokenAccountId.instruction
-        )
-    }
-
-    const originalNFTAccount = await getOrCreateATA({ provider: saberProvider, mint: nftMint, owner: wallet.publicKey});
-
-    if (originalNFTAccount.instruction) {
-        console.log("originalNFTAccount is being initialized");
-        
-        transaction.add(
-            originalNFTAccount.instruction
-        )
-    }
-
-    const remainingAccountsUnstake = [{
-        pubkey: stakeEntryStakeMintTokenAccountId,
-        isSigner: false,
-        isWritable: false,
-     }]
+    const userOriginalMintAta = getATAAddressSync({ mint: nftMint, owner: wallet.publicKey});
 
     transaction.add(
-        await program.methods.unstake()
-            .accounts({
+            createUnstakeInstruction({
                 stakeEntry: stakeEntryPda,
                 originalMint: nftMint,
-                stakeEntryOriginalMintTokenAccount: stakeEntryOriginalMintTokenAccountId.address,
+                stakeEntryOriginalMintTokenAccount: stakeEntryOriginalMintAta,
                 user: wallet.publicKey,
-                userOriginalMintTokenAccount: originalNFTAccount.address,
-                tokenProgram: TOKEN_PROGRAM_ID
+                userOriginalMintTokenAccount: userOriginalMintAta,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                anchorRemainingAccounts: remainingAccountsUnstake
             })
-            .signers([wallet])
-            .remainingAccounts(remainingAccountsUnstake)
-            .instruction()
-    )
+        )
 
     // Close Stake Entry
 
     transaction.add(
-        await program.methods.closeStakeEntry()
-            .accounts( {
+            createCloseStakeEntryInstruction({
                 stakePool: stakePoolPda,
                 stakeEntry: stakeEntryPda,
-                authority: poolAccount.publicKey
+                rewardManager: rewardManager,
+                authority: stakingAuthority.publicKey
             })
-            .signers([poolAccount])
-            .instruction()
     )
 
     try {
@@ -432,7 +445,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         transaction.recentBlockhash = blockhash.blockhash;
         transaction.feePayer = wallet.publicKey;
         await wallet.signTransaction(transaction);
-        transaction.partialSign(poolAccount)
+        transaction.partialSign(stakingAuthority)
          
         const unstakeTx = await connection.sendRawTransaction(transaction.serialize()); 
         
@@ -464,21 +477,21 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         connection: connection,
         wallet: wallet
     })
-    const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramID, provider);
+    // const distributorProgram = new Program<OgRewardDistributor>(distributorIdl, distributorProgramId, provider);
 
     let transaction = new Transaction();
 
     const [stakePoolPda] = await PublicKey.findProgramAddress(
-        [Buffer.from("stake-pool"), poolAccount.publicKey.toBuffer()],
-        programID
+        [Buffer.from("stake-pool"), poolSeed.toBuffer()],
+        poolProgramId
     );    
 
     const [rewardDistributorPda] = await PublicKey.findProgramAddress(
         [utils.bytes.utf8.encode("reward-distributor"), stakePoolPda.toBuffer()],
-        distributorProgram.programId
+        distributorProgramId
     );
 
-    const rewardMint = (await distributorProgram.account.rewardDistributor.fetch(rewardDistributorPda)).rewardMint;
+    const rewardMint = (await RewardDistributor.fromAccountAddress(connection, rewardDistributorPda)).rewardMint // TODO: Check if working
 
     const userRewardMintTokenAccount = await getOrCreateATA({
         provider: saberProvider,
@@ -495,7 +508,7 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
         )
     }
 
-    const rewardDistributorTokenAccount = await getATAAddressSync({
+    const rewardDistributorAta = getATAAddressSync({
         mint: rewardMint,
         owner: rewardDistributorPda
     })        
@@ -505,31 +518,28 @@ export const claimRewards = async(nftMints: Array<PublicKey>, wallet: any) => {
     _.forEach(nftMints, async nftMint => {
         const[stakeEntryPda] = await PublicKey.findProgramAddress(
             [Buffer.from("stake-entry"), stakePoolPda.toBuffer(), nftMint.toBuffer(), wallet.publicKey.toBuffer()],
-            programID
+            poolProgramId
         );        
     
         const [rewardEntryPda] = await PublicKey.findProgramAddress(
             [utils.bytes.utf8.encode("reward-entry"), rewardDistributorPda.toBuffer(), stakeEntryPda.toBuffer()],
-            distributorProgram.programId
+            distributorProgramId
         );
 
         transaction.add(
-            await distributorProgram.methods.claimRewards()
-                .accounts({
-                    rewardEntry: rewardEntryPda,
-                    rewardDistributor: rewardDistributorPda,
-                    rewardDistributorTokenAccount: rewardDistributorTokenAccount,
-                    stakeEntry: stakeEntryPda,
-                    stakePool: stakePoolPda,
-                    rewardMint: rewardMint,
-                    userRewardMintTokenAccount: userRewardMintTokenAccount.address,
-                    rewardManager: poolAccount.publicKey,
-                    user: wallet.publicKey,
-                    tokenProgram: TOKEN_PROGRAM_ID,
-                    systemProgram: SystemProgram.programId
-                })
-                .signers([wallet])
-                .instruction()
+            createClaimRewardsInstruction({
+                rewardEntry: rewardEntryPda,
+                rewardDistributor: rewardDistributorPda,
+                rewardDistributorTokenAccount: rewardDistributorAta,
+                stakeEntry: stakeEntryPda,
+                stakePool: stakePoolPda,
+                rewardMint: rewardMint,
+                userRewardMintTokenAccount: userRewardMintTokenAccount.address,
+                rewardManager: rewardManager,
+                user: wallet.publicKey,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                systemProgram: SystemProgram.programId
+            })
         )
     })
 

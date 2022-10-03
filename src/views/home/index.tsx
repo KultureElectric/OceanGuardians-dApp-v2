@@ -38,8 +38,10 @@ export const HomeView: FC = ({ }) => {
   const [swapLoading, setSwapLoading] = useState(false)
 
   const wallet = useWallet();
-  const walletNFTs = useWalletNFTs()
+  const walletNFTs = useWalletNFTs();  
   
+  console.log(walletNFTs);
+
   const refSwap = useRef(null);
   
   const { connection } = useConnection();

@@ -27,7 +27,8 @@ export type NFT = {
     Location: string,
     Wave: string,
     Board: string
-  }
+  },
+  isStaked: boolean
 }
 
 const useWalletNFTs = (single?: boolean, latestTx?: string) => {

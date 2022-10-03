@@ -22,24 +22,26 @@ const {
   export async function getNFTMetadata(
     mint: string,
     conn: Connection,
-    pubkey?: string
+    pubkey?: string,
+    isStaked?: boolean
   ): Promise<NFT | undefined> {
-    try {
+    try {      
       // Fetch on-chain & metadata
       const metadataPDA = await Metadata.getPDA(mint)
       const onchainMetadata = (await Metadata.load(conn, metadataPDA)).data
-      const externalMetadata = (await axios.get(onchainMetadata.data.uri)).data      
+      const externalMetadata = (await axios.get(onchainMetadata.data.uri)).data         
 
       // Fetch Dynamic Layers
       const id = externalMetadata.name.replace(' #', 'Official');
-      const dynamicLayers: {Wave: string, Location: string, Board: string} = (await aggregate.Get({address: alephAcc.address, keys: [id], APIServer: "https://api2.aleph.im"}))[id];      
+      const dynamicLayers: {Wave: string, Location: string, Board: string} = (await aggregate.Get({address: alephAcc.address, keys: [id], APIServer: "https://official.aleph.cloud"}))[id];           
 
       return {
         pubkey: pubkey ? new PublicKey(pubkey) : undefined,
         mint: new PublicKey(mint),
         onchainMetadata,
         externalMetadata,
-        dynamicLayers
+        dynamicLayers,
+        isStaked
       }
     } catch (e) {
       toast(`failed to pull metadata for token ${mint}`)
@@ -49,13 +51,14 @@ const {
   
   export async function getNFTMetadataForMany(
     tokens: any[],
-    conn: Connection
+    conn: Connection,
+    isStaked?: boolean
   ): Promise<NFT[]> {
     const promises: Promise<NFT | undefined>[] = []
-    tokens.forEach((token) =>
-      promises.push(getNFTMetadata(token.mint, conn, token.pubkey))
+    tokens.forEach((token) =>      
+      promises.push(getNFTMetadata(token.mint, conn, token.pubkey, isStaked))
     )
-    const nfts = (await Promise.all(promises)).filter((n) => !!n)
+    const nfts = (await Promise.all(promises)).filter((n) => !!n)    
   
     return nfts
   }
@@ -66,7 +69,7 @@ export async function getNFTsByOwner(
   ): Promise<NFT[]> {        
     const tokenAccounts = await conn.getParsedTokenAccountsByOwner(owner, {
       programId: TOKEN_PROGRAM_ID,
-    })
+    });    
   
     const tokens = tokenAccounts.value.filter((tokenAccount) => {
         const amount = tokenAccount.account.data.parsed.info.tokenAmount
@@ -81,7 +84,7 @@ export async function getNFTsByOwner(
       })
       .filter((mint) => {
         return _.includes(hashList, mint.mint)
-      });      
+      });            
   
     return await getNFTMetadataForMany(tokens, conn)
   }
@@ -113,11 +116,11 @@ export async function getStakedNFTs(
               account.account.data
           );
           return {
-            mint: stakeEntryData.stakeMint.toBase58()
+            mint: stakeEntryData.originalMint.toBase58()
           }
       }))
-          
-      return await getNFTMetadataForMany(tokens, conn)
+                
+      return await getNFTMetadataForMany(tokens, conn, true)
 
     } catch (error) {
       toast("Failed to load staked NFTs")

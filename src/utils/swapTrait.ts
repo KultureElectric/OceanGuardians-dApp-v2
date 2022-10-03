@@ -73,7 +73,7 @@ export const swapTrait = async(previewTrait: string, traitReference: string, act
                 channel: "OceanGuardiansNFT",
                 storageEngine: ItemType.storage,
                 inlineRequested: true,
-                APIServer: "https://api2.aleph.im",
+                APIServer: "https://official.aleph.cloud",
             })
 
             if (res.item_hash) {
