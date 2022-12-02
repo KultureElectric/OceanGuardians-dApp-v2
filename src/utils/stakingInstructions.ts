@@ -436,13 +436,14 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
                 authority: stakingAuthority.publicKey
             })
     )
+    console.log(transaction);
 
     try {
         const blockhash = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash.blockhash;
         transaction.feePayer = wallet.publicKey;
         await wallet.signTransaction(transaction);
-        transaction.partialSign(stakingAuthority)
+        transaction.partialSign(stakingAuthority)        
          
         const unstakeTx = await connection.sendRawTransaction(transaction.serialize()); 
         
