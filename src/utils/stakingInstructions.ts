@@ -413,7 +413,13 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
 
     // Unstake
 
-    const userOriginalMintAta = getATAAddressSync({ mint: nftMint, owner: wallet.publicKey});
+    // const userOriginalMintAta = getATAAddressSync({ mint: nftMint, owner: wallet.publicKey});
+
+    const userOriginalMintAta = await getOrCreateATA({ provider: saberProvider, mint: nftMint, owner: wallet.publicKey, payer: wallet.publicKey });
+
+    if (userOriginalMintAta.instruction) {
+        transaction.add(userOriginalMintAta.instruction);
+    }
 
     transaction.add(
             createUnstakeInstruction({
@@ -421,7 +427,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
                 originalMint: nftMint,
                 stakeEntryOriginalMintTokenAccount: stakeEntryOriginalMintAta,
                 user: wallet.publicKey,
-                userOriginalMintTokenAccount: userOriginalMintAta,
+                userOriginalMintTokenAccount: userOriginalMintAta.address,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 anchorRemainingAccounts: remainingAccountsUnstake
             })
