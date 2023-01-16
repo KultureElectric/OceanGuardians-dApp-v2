@@ -267,6 +267,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
 
 
     if (stakeEntryAccount.stakeMint && stakeEntryAccount.stakeMintClaimed) { // TODO: look here when updating contract
+        
         const stakeEntryStakeMintTokenAccountId = getATAAddressSync({
             mint: stakeEntryAccount.stakeMint,
             owner: stakeEntryPda
@@ -308,7 +309,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
                 remainingAccountsForReturn
             )
         )
-    } else if (!stakeEntryAccount.stakeMint && stakeEntryAccount.stakeMintClaimed) {
+    } else if (!stakeEntryAccount.stakeMint && stakeEntryAccount.stakeMintClaimed) {        
         remainingAccountsUnstake = [{
             pubkey: stakeEntryOriginalMintAta,
             isSigner: false,
@@ -445,7 +446,7 @@ export const unstakeNFTs = async(nftMint: PublicKey, wallet: any) => {
         await wallet.signTransaction(transaction);
         transaction.partialSign(stakingAuthority)        
          
-        const unstakeTx = await connection.sendRawTransaction(transaction.serialize()); 
+        const unstakeTx = await connection.sendRawTransaction(transaction.serialize(), { skipPreflight: true }); 
         
         const toastId = toast.loading(Toast("Confirming Tx...", unstakeTx))
         
